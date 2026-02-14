@@ -14,6 +14,8 @@ import chalk from 'chalk'
 import figlet from 'figlet'
 import P from 'pino'
 import readline from 'readline'
+import express from 'express'
+import axios from 'axios'
 import { pathToFileURL } from 'url'
 import { cache } from './utils/cache.js'
 
@@ -41,7 +43,7 @@ function readSavedLoginMode() {
       const value = fs.readFileSync(loginModeFile, 'utf8').trim().toLowerCase()
       if (value === 'qr' || value === 'code') return value
     }
-  } catch {}
+  } catch { }
   return null
 }
 function persistLoginMode(mode) {
@@ -50,7 +52,7 @@ function persistLoginMode(mode) {
       if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
       fs.writeFileSync(loginModeFile, mode)
     }
-  } catch {}
+  } catch { }
 }
 let chosenLoginMode = readSavedLoginMode() || LOGIN_METHOD
 
@@ -64,15 +66,49 @@ function promptInput(q) {
   })
 }
 
+// --- Serveur Web & Keep-Alive ---
+const app = express()
+const PORT = process.env.PORT || 3000
+let lastQR = null
+let lastPairCode = null
+
+app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
+app.get('/qr', (req, res) => {
+  if (lastQR) {
+    res.setHeader('Content-Type', 'image/png')
+    qrcode.toBuffer(lastQR, (err, buffer) => {
+      if (err) res.status(500).send('Error generating QR')
+      else res.send(buffer)
+    })
+  } else {
+    res.send('QR Code non généré ou déjà scanné.')
+  }
+})
+app.get('/pair', (req, res) => res.send(lastPairCode ? `Code de jumelage : ${lastPairCode}` : 'Code non généré.'))
+
+app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
+
+function startKeepAlive() {
+  if (!process.env.RENDER_URL) return
+  setInterval(async () => {
+    try {
+      await axios.get(process.env.RENDER_URL)
+      console.log(chalk.gray('⚓ Keep-alive ping success'))
+    } catch (e) {
+      console.error('⚓ Keep-alive ping failed:', e.message)
+    }
+  }, 14 * 60 * 1000) // 14 minutes
+}
+
 // --- Cache optimisé pour les métadonnées ---
 async function getGroupMetadataCached(sock, groupJid) {
   const cacheKey = `metadata_${groupJid}`
   const cached = cache.get(cacheKey)
-  
+
   if (cached) {
     return cached
   }
-  
+
   const metadata = await sock.groupMetadata(groupJid)
   cache.set(cacheKey, metadata, 300000) // 5 minutes de cache
   return metadata
@@ -82,17 +118,17 @@ async function getGroupMetadataCached(sock, groupJid) {
 async function isAdminCached(sock, groupId, userId) {
   const cacheKey = `admin_${groupId}_${userId}`
   const cached = cache.get(cacheKey)
-  
+
   if (cached !== undefined) {
     return cached
   }
-  
+
   try {
     const metadata = await getGroupMetadataCached(sock, groupId)
     const isAdmin = metadata.participants.some(
       p => p.id === userId && (p.admin === 'admin' || p.admin === 'superadmin')
     )
-    
+
     cache.set(cacheKey, isAdmin, 300000) // 5 minutes de cache
     return isAdmin
   } catch (e) {
@@ -107,9 +143,9 @@ async function chooseLoginMode() {
   console.log(chalk.gray('1. qr   - Connexion par QR Code (rapide)'))
   console.log(chalk.gray('2. code - Connexion par code à 8 chiffres'))
   console.log(chalk.cyan('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'))
-  
+
   const ans = (await promptInput('Choisis ta méthode (qr/code) [qr]: ')).trim().toLowerCase()
-  
+
   if (ans === 'code') {
     console.log(chalk.green('✅ Méthode sélectionnée: CODE DE LIAISON'))
     return 'code'
@@ -146,12 +182,12 @@ function checkNetworkTimeout(url = 'https://web.whatsapp.com', timeout = 3000) {
 async function loadCommands() {
   const map = new Map()
   console.log(`📂 Chemin des commandes: ${cmdDir}`)
-  
+
   if (!fs.existsSync(cmdDir)) {
     console.log(`⚠️ Le répertoire des commandes n'existe pas, création...`)
     fs.mkdirSync(cmdDir, { recursive: true })
   }
-  
+
   const files = fs.readdirSync(cmdDir).filter(f => f.endsWith('.js'))
   console.log(`🔍 Fichiers trouvés dans ${cmdDir}:`, files)
   console.log(chalk.cyan(`🔍 Chargement de ${files.length} commandes...`))
@@ -271,21 +307,22 @@ async function start() {
 
       sock.ev.on('connection.update', async (upd) => {
         const { connection, lastDisconnect, qr } = upd
-        
+
         // Gestion améliorée du QR code
         if (qr && loginMode !== 'code') {
+          lastQR = qr
           qrCount++
-          
+
           // Nettoyer l'ancien timeout
           if (qrTimeout) clearTimeout(qrTimeout)
-          
+
           console.log(chalk.cyan('\n' + '═'.repeat(60)))
           console.log(chalk.green.bold(`\n📱 QR CODE WHATSAPP (${qrCount}/${MAX_QR_ATTEMPTS})`))
           console.log(chalk.cyan('═'.repeat(60) + '\n'))
-          
+
           // Afficher le QR code en GRAND pour être bien visible
           qrcode.generate(qr, { small: false })
-          
+
           console.log(chalk.cyan('\n' + '═'.repeat(60)))
           console.log(chalk.yellow.bold('\n📝 INSTRUCTIONS:'))
           console.log(chalk.gray('   1️⃣  Ouvre WhatsApp sur ton téléphone'))
@@ -293,15 +330,16 @@ async function start() {
           console.log(chalk.gray('   3️⃣  Appuie sur "Lier un appareil"'))
           console.log(chalk.gray('   4️⃣  Pointe ton téléphone vers ce QR code'))
           console.log(chalk.gray('   5️⃣  Le bot se connectera automatiquement\n'))
-          
+
           console.log(chalk.yellow('⏰ Ce QR code expire dans 60 secondes'))
           console.log(chalk.gray('   Un nouveau sera généré automatiquement si besoin\n'))
           console.log(chalk.cyan('═'.repeat(60) + '\n'))
-          
+
           // Timer d'expiration du QR (60s)
           qrTimeout = setTimeout(() => {
             if (!state.creds.registered) {
               console.log(chalk.yellow('\n⏱️  QR code expiré. Génération d\'un nouveau...'))
+              lastQR = null
               if (qrCount >= MAX_QR_ATTEMPTS) {
                 console.log(chalk.red('\n❌ Nombre maximum de tentatives atteint.'))
                 console.log(chalk.yellow('💡 Conseils:'))
@@ -315,15 +353,18 @@ async function start() {
         if (connection === 'open') {
           reconnectAttempts = 0
           qrCount = 0  // Reset compteur QR
+          lastQR = null
           if (qrTimeout) clearTimeout(qrTimeout)  // Nettoyer timeout
-          
+
+          startKeepAlive()
+
           console.log(chalk.green('\n' + '═'.repeat(60)))
           console.log(chalk.green.bold('✅ CONNEXION RÉUSSIE!'))
           console.log(chalk.green('═'.repeat(60)))
           console.log(chalk.cyan(`\n📱 Bot connecté à WhatsApp`))
           console.log(chalk.gray(`🤖 Numéro: ${sock.user?.id?.split(':')[0] || 'inconnu'}`))
           console.log(chalk.gray(`👤 Nom: ${sock.user?.name || 'Erwin-Bot'}`))
-          
+
           // Démarrer le monitoring de sécurité
           console.log(chalk.blue('\n🛡️ Démarrage du système de sécurité anti-ban...'))
           startHealthMonitoring(60000) // Monitoring toutes les minutes
@@ -350,21 +391,33 @@ async function start() {
         }
       })
 
-      // --- Pairing code désactivé : connexion QR uniquement ---
-      if (!state.creds.registered) {
+      // --- Pairing code support ---
+      if (!state.creds.registered && loginMode === 'code') {
+        const phoneNumber = await promptInput(chalk.cyan('📱 Entre ton numéro (ex: 237xxxxxx) : '))
+        setTimeout(async () => {
+          try {
+            const code = await sock.requestPairingCode(phoneNumber.replace(/[+-\s]/g, ''))
+            lastPairCode = code
+            console.log(chalk.white.bold('\n🔑 TON CODE DE JUMELAGE : ') + chalk.yellow.bold(code))
+            console.log(chalk.gray('🔗 Utilise ce code sur ton téléphone (Appareils liés > Lier avec le numéro de téléphone)\n'))
+          } catch (e) {
+            console.error('❌ Erreur génération code pairing:', e.message)
+          }
+        }, 3000)
+      } else if (!state.creds.registered) {
         console.log('📱 Connexion par QR code (pairing code désactivé)')
       }
 
       // --- Gestion optimisée des messages ---
       console.log('✅ Bot connecté et en attente de messages...')
-      
+
       // Afficher toutes les commandes chargées
       console.log('📋 Commandes chargées:', [...commands.keys()].join(', '))
-      
+
       sock.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages?.[0]
         if (!msg || !msg.message) return
-        
+
         console.log('📩 Message reçu:', {
           from: msg.key.remoteJid,
           sender: msg.key.participant || msg.key.remoteJid,
@@ -374,19 +427,19 @@ async function start() {
         const from = msg.key.remoteJid
         const sender = msg.key.participant || msg.key.remoteJid
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || ''
-        
+
         // Gestion des auto-réactions (non-bloquant)
         if (from.endsWith('@g.us')) {
-          handleAutoReact(sock, msg, from, text).catch(() => {})
+          handleAutoReact(sock, msg, from, text).catch(() => { })
         }
-        
+
         // Vérification antilink en parallèle si nécessaire
         if (from.endsWith('@g.us')) {
           const [settings, isAdmin] = await Promise.all([
             getGroupSettings(from),
             isAdminCached(sock, from, sender)
           ])
-          
+
           // Vérification antilink
           if (settings.antilink && text) {
             const hasLink = /(https?:\/\/|www\.|wa\.me\/|whatsapp\.com\/)/i.test(text)
@@ -394,7 +447,7 @@ async function start() {
               try {
                 await Promise.all([
                   sock.sendMessage(from, { delete: msg.key }).catch(console.error),
-                  sendText(sock, from, `🚫 @${sender.split('@')[0]}, les liens sont interdits dans ce groupe.`, { 
+                  sendText(sock, from, `🚫 @${sender.split('@')[0]}, les liens sont interdits dans ce groupe.`, {
                     mentions: [sender],
                     delay: 100 // Petit délai pour éviter le flood
                   })
@@ -406,7 +459,7 @@ async function start() {
             }
           }
         }
-        
+
         // Vérifier si le message commence par le préfixe
         const prefix = getPrefix()
         console.log('🔍 Vérification du préfixe pour:', text, '(préfixe attendu:', prefix + ')')
@@ -484,26 +537,26 @@ async function start() {
         try {
           const { id, participants, action } = update
           if (!id || !participants?.length) return
-          
+
           // Récupération en parallèle des paramètres et métadonnées
           const [settings, groupMetadata] = await Promise.all([
             getGroupSettings(id),
             getGroupMetadataCached(sock, id)
           ])
-          
+
           const groupName = groupMetadata?.subject || 'ce groupe'
           const now = Date.now()
-          
+
           // Traitement des arrivées et départs en parallèle
           const messagePromises = []
-          
+
           // Gestion des messages de bienvenue
           if (action === 'add' && settings.welcome) {
             for (const participant of participants) {
               const text = settings.welcome
                 .replace(/{user}/g, `@${participant.split('@')[0]}`)
                 .replace(/{group}/g, groupName)
-                
+
               messagePromises.push(
                 secureMessageSend(sock, id, {
                   text: `👋 ${text}`,
@@ -513,14 +566,14 @@ async function start() {
               )
             }
           }
-          
+
           // Gestion des messages d'au revoir
           if (action === 'remove' && settings.goodbye) {
             for (const participant of participants) {
               const text = settings.goodbye
                 .replace(/{user}/g, `@${participant.split('@')[0]}`)
                 .replace(/{group}/g, groupName)
-                
+
               messagePromises.push(
                 secureMessageSend(sock, id, {
                   text: `👋 ${text}`,
@@ -534,16 +587,16 @@ async function start() {
           // Antibot
           if (action === 'add' && settings.antibot) {
             const groupMetadata = await getGroupMetadataCached(sock, id)
-            
+
             for (const participant of participants) {
               // Vérifier si c'est un bot (JID commence par un préfixe spécifique)
               // Baileys et autres bots ont souvent des JIDs qui ne sont pas des numéros purs
-              const isLikelyBot = !participant.startsWith('1') && !participant.startsWith('2') && 
-                                  !participant.startsWith('3') && !participant.startsWith('4') &&
-                                  !participant.startsWith('5') && !participant.startsWith('6') &&
-                                  !participant.startsWith('7') && !participant.startsWith('8') &&
-                                  !participant.startsWith('9')
-              
+              const isLikelyBot = !participant.startsWith('1') && !participant.startsWith('2') &&
+                !participant.startsWith('3') && !participant.startsWith('4') &&
+                !participant.startsWith('5') && !participant.startsWith('6') &&
+                !participant.startsWith('7') && !participant.startsWith('8') &&
+                !participant.startsWith('9')
+
               if (isLikelyBot) {
                 try {
                   await sock.groupParticipantsUpdate(id, [participant], 'remove')
@@ -557,12 +610,12 @@ async function start() {
               }
             }
           }
-          
+
           // Exécution en parallèle de tous les envois de messages
           if (messagePromises.length > 0) {
             await Promise.all(messagePromises)
           }
-          
+
         } catch (e) {
           console.error('Erreur group-participants.update:', e)
         }
@@ -582,7 +635,7 @@ async function start() {
     }
   }
 
-  try { await createSocket() } 
+  try { await createSocket() }
   catch (e) { console.error('Erreur createSocket', e) }
 
   process.on('uncaughtException', (err) => console.error('uncaughtException', err))
