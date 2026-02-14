@@ -143,50 +143,53 @@ async function start() {
 
     sock.ev.on('creds.update', saveCreds)
 
-    // 📲 QR TERMINAL (géré par printQRInTerminal: true)
-    if (qr && !state.creds.registered) {
-      console.log('📲 QR généré (voir terminal/logs)')
-    }
+    sock.ev.on('connection.update', (upd) => {
+      const { connection, lastDisconnect, qr } = upd
 
-    if (connection === 'open') {
-      isConnected = true
-      console.log('✅ WhatsApp connecté')
-      startHealthMonitoring(60000)
-    }
+      // 📲 QR TERMINAL (géré par printQRInTerminal: true)
+      if (qr && !state.creds.registered) {
+        console.log('📲 QR généré (voir terminal/logs)')
+      }
 
-    if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
-      isConnected = false
-      console.log('❌ Déconnecté', shouldReconnect ? ', reconnexion…' : ', session terminée.')
-      if (shouldReconnect) createSocket()
-    }
-  })
+      if (connection === 'open') {
+        isConnected = true
+        console.log('✅ WhatsApp connecté')
+        startHealthMonitoring(60000)
+      }
 
-  sock.ev.on('messages.upsert', async ({ messages }) => {
-    const msg = messages?.[0]
-    if (!msg?.message) return
+      if (connection === 'close') {
+        const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
+        isConnected = false
+        console.log('❌ Déconnecté', shouldReconnect ? ', reconnexion…' : ', session terminée.')
+        if (shouldReconnect) createSocket()
+      }
+    })
 
-    const from = msg.key.remoteJid
-    const text =
-      msg.message.conversation ||
-      msg.message.extendedTextMessage?.text ||
-      ''
+    sock.ev.on('messages.upsert', async ({ messages }) => {
+      const msg = messages?.[0]
+      if (!msg?.message) return
 
-    if (!text.startsWith(getPrefix())) return
+      const from = msg.key.remoteJid
+      const text =
+        msg.message.conversation ||
+        msg.message.extendedTextMessage?.text ||
+        ''
 
-    const [cmd, ...args] = text.slice(getPrefix().length).trim().split(/\s+/)
-    const fn = commands.get(cmd.toLowerCase())
-    if (!fn) return
+      if (!text.startsWith(getPrefix())) return
 
-    try {
-      await fn(sock, msg, args)
-    } catch {
-      reply(sock, from, msg, '⚠️ Erreur commande')
-    }
-  })
-}
+      const [cmd, ...args] = text.slice(getPrefix().length).trim().split(/\s+/)
+      const fn = commands.get(cmd.toLowerCase())
+      if (!fn) return
 
-createSocket()
+      try {
+        await fn(sock, msg, args)
+      } catch {
+        reply(sock, from, msg, '⚠️ Erreur commande')
+      }
+    })
+  }
+
+  createSocket()
 }
 
 start().catch(console.error)
