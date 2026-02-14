@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 // Clé API Gemini fournie par l'utilisateur
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+
+if (!GEMINI_API_KEY) {
+    console.warn('⚠️ GEMINI_API_KEY manquant dans le fichier .env ! La commande .ai ne fonctionnera pas.')
+}
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })

@@ -89,15 +89,16 @@ app.get('/pair', (req, res) => res.send(lastPairCode ? `Code de jumelage : ${las
 app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
 
 function startKeepAlive() {
-  if (!process.env.RENDER_URL) return
+  const url = process.env.RENDER_EXTERNAL_URL || process.env.RENDER_URL
+  if (!url) return
   setInterval(async () => {
     try {
-      await axios.get(process.env.RENDER_URL)
+      await axios.get(url)
       console.log(chalk.gray('⚓ Keep-alive ping success'))
     } catch (e) {
       console.error('⚓ Keep-alive ping failed:', e.message)
     }
-  }, 14 * 60 * 1000) // 14 minutes
+  }, 3 * 60 * 1000) // 3 minutes
 }
 
 // --- Cache optimisé pour les métadonnées ---
