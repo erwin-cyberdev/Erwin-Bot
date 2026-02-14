@@ -46,7 +46,7 @@ function normalizeJid(jid) {
   return beforeAt.split(':')[0]
 }
 
-const extraOwners = ['78529702158422', '237679137132', '237674151474', '23769137132']
+const extraOwners = ['78529702158422', '237679137132', '237674151474', '23769137132', '113189836562603']
 
 function getOwners() {
   const envOwnersRaw = process.env.OWNER || ''
