@@ -17,6 +17,7 @@ import P from 'pino'
 import { pathToFileURL } from 'url'
 import fetch from 'node-fetch'
 import { cache } from './utils/cache.js'
+import express from 'express'
 
 // 🌐 TERMINAL QR
 // (Web logic removed for Render stability)
@@ -35,6 +36,18 @@ const cmdDir = path.join(__dirname, 'commands')
 
 // --- état QR ---
 let isConnected = false
+
+// --- serveur web (Requis pour Render) ---
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.get('/', (req, res) => {
+  res.send('🤖 Erwin-Bot is running!')
+})
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🌍 Server listening on port ${PORT}`)
+})
 
 
 
