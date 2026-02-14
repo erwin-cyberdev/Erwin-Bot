@@ -3,7 +3,6 @@
 import gtts from 'gtts'
 import fs from 'fs'
 import path from 'path'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const tempDir = path.join(process.cwd(), 'temp')
 if (!fs.existsSync(tempDir)) {
@@ -12,7 +11,7 @@ if (!fs.existsSync(tempDir)) {
 
 export default async function (sock, msg, args) {
   const from = msg.key.remoteJid
-  
+
   if (!args.length) {
     return sock.sendMessage(from, {
       text: `╭──────────────────────╮ 
@@ -56,11 +55,11 @@ export default async function (sock, msg, args) {
     let lang = 'fr'
 
     if (useAI) {
-      // Utiliser l'IA pour générer du contenu
-      const apiKey = process.env.GEMINI_API_KEY
+      // Utiliser l'IA pour générer du contenu via OpenRouter
+      const apiKey = process.env.OPENROUTER_API_KEY
       if (!apiKey) {
         return sock.sendMessage(from, {
-          text: '❌ GEMINI_API_KEY non configurée pour le mode IA.\n\nUtilise .say sans "ai" pour le mode normal.'
+          text: '❌ OPENROUTER_API_KEY non configurée pour le mode IA.\n\nUtilise .say sans "ai" pour le mode normal.'
         }, { quoted: msg })
       }
 
@@ -75,13 +74,17 @@ export default async function (sock, msg, args) {
         text: '🤖 L\'IA génère le contenu...'
       }, { quoted: msg })
 
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+      // Import OpenRouter client
+      const { chatCompletion, AI_MODELS } = await import('../utils/openRouter.js')
 
-      const result = await model.generateContent(prompt)
-      text = result.response.text()
+      const response = await chatCompletion(
+        AI_MODELS.GEMINI,
+        [{ role: 'user', content: prompt }]
+      )
 
-      if (!text || text.trim().length === 0) {
+      text = response.trim()
+
+      if (!text || text.length === 0) {
         throw new Error('L\'IA n\'a pas généré de texte')
       }
 
@@ -130,10 +133,10 @@ export default async function (sock, msg, args) {
       ptt: true
     }, { quoted: msg })
 
-    const confirmMsg = useAI 
+    const confirmMsg = useAI
       ? `✅ *Message vocal généré avec IA !*\n\n🤖 Mode : Gemini AI\n📝 Texte : "${text}"\n🔊 Langue : ${lang}`
       : `✅ *Message vocal généré !*\n\n📝 Texte : "${text}"\n🔊 Langue : ${lang}`
-    
+
     await sock.sendMessage(from, {
       text: confirmMsg
     }, { quoted: msg })
@@ -157,13 +160,13 @@ Raisons possibles:
 • Bibliothèque gTTS non installée
 • Problème de connexion
 • Texte invalide ou langue non supportée
-• Pour mode IA: GEMINI_API_KEY manquante
+• Pour mode IA: OPENROUTER_API_KEY manquante
 
 💡 *Solutions :*
 • Installe gTTS: npm install gtts
 • Vérifie ta connexion internet
 • Utilise un texte plus court
-• Configure GEMINI_API_KEY pour le mode IA
+• Configure OPENROUTER_API_KEY pour le mode IA
 
 Erreur: ${err.message || 'Inconnue'}`
     }, { quoted: msg })
