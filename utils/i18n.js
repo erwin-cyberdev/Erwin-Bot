@@ -225,7 +225,6 @@ export function formatMenuSections(sections, langPreference) {
 
     // Footer
     lines.push(pattern.divider)
-    lines.push('_Powered by OpenRouter AI_')
     lines.push('')
 
     if (index < langs.length - 1) {
