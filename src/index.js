@@ -18,9 +18,8 @@ import { pathToFileURL } from 'url'
 import fetch from 'node-fetch'
 import { cache } from './utils/cache.js'
 
-// 🌐 WEB QR
-import express from 'express'
-import QRCode from 'qrcode'
+// 🌐 TERMINAL QR
+// (Web logic removed for Render stability)
 
 // --- utils sécurisés ---
 import { getPrefix } from './utils/prefixManager.js'
@@ -35,44 +34,10 @@ const authDir = path.join(__dirname, 'auth_info')
 const cmdDir = path.join(__dirname, 'commands')
 
 // --- état QR ---
-let latestQR = null
 let isConnected = false
 
-// --- serveur web ---
-const app = express()
-const PORT = process.env.PORT || 3000
 
-app.get('/', (_, res) => {
-  res.send('🤖 Erwin-Bot est en ligne')
-})
 
-app.get('/qr', async (_, res) => {
-  if (isConnected) {
-    return res.send('✅ Bot déjà connecté à WhatsApp')
-  }
-
-  if (!latestQR) {
-    return res.send('⏳ QR code pas encore généré, recharge la page...')
-  }
-
-  const qrImage = await QRCode.toDataURL(latestQR)
-  res.send(`
-    <html>
-      <head><title>QR WhatsApp</title></head>
-      <body style="display:flex;flex-direction:column;align-items:center;font-family:sans-serif">
-        <h2>📱 Scanner le QR WhatsApp</h2>
-        <img src="${qrImage}" />
-        <p>Recharge si le QR expire</p>
-      </body>
-    </html>
-  `)
-})
-
-app.listen(PORT, () => {
-  console.log(`🌍 Serveur QR actif sur le port ${PORT}`)
-})
-
-// --- helpers ---
 const sleep = (ms) => new Promise(res => setTimeout(res, ms))
 
 function header() {
@@ -178,55 +143,50 @@ async function start() {
 
     sock.ev.on('creds.update', saveCreds)
 
-    sock.ev.on('connection.update', (upd) => {
-      const { connection, lastDisconnect, qr } = upd
+    // 📲 QR TERMINAL (géré par printQRInTerminal: true)
+    if (qr && !state.creds.registered) {
+      console.log('📲 QR généré (voir terminal/logs)')
+    }
 
-      // 📲 QR WEB
-      if (qr && !state.creds.registered) {
-        latestQR = qr
-        console.log('📲 QR généré → /qr')
-      }
+    if (connection === 'open') {
+      isConnected = true
+      console.log('✅ WhatsApp connecté')
+      startHealthMonitoring(60000)
+    }
 
-      if (connection === 'open') {
-        isConnected = true
-        latestQR = null
-        console.log('✅ WhatsApp connecté')
-        startHealthMonitoring(60000)
-      }
+    if (connection === 'close') {
+      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
+      isConnected = false
+      console.log('❌ Déconnecté', shouldReconnect ? ', reconnexion…' : ', session terminée.')
+      if (shouldReconnect) createSocket()
+    }
+  })
 
-      if (connection === 'close') {
-        const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
-        isConnected = false
-        console.log('❌ Déconnecté', shouldReconnect ? ', reconnexion…' : ', session terminée.')
-        if (shouldReconnect) createSocket()
-      }
-    })
+  sock.ev.on('messages.upsert', async ({ messages }) => {
+    const msg = messages?.[0]
+    if (!msg?.message) return
 
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-      const msg = messages?.[0]
-      if (!msg?.message) return
+    const from = msg.key.remoteJid
+    const text =
+      msg.message.conversation ||
+      msg.message.extendedTextMessage?.text ||
+      ''
 
-      const from = msg.key.remoteJid
-      const text =
-        msg.message.conversation ||
-        msg.message.extendedTextMessage?.text ||
-        ''
+    if (!text.startsWith(getPrefix())) return
 
-      if (!text.startsWith(getPrefix())) return
+    const [cmd, ...args] = text.slice(getPrefix().length).trim().split(/\s+/)
+    const fn = commands.get(cmd.toLowerCase())
+    if (!fn) return
 
-      const [cmd, ...args] = text.slice(getPrefix().length).trim().split(/\s+/)
-      const fn = commands.get(cmd.toLowerCase())
-      if (!fn) return
+    try {
+      await fn(sock, msg, args)
+    } catch {
+      reply(sock, from, msg, '⚠️ Erreur commande')
+    }
+  })
+}
 
-      try {
-        await fn(sock, msg, args)
-      } catch {
-        reply(sock, from, msg, '⚠️ Erreur commande')
-      }
-    })
-  }
-
-  createSocket()
+createSocket()
 }
 
 start().catch(console.error)
