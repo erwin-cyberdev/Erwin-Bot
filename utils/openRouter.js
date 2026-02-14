@@ -12,10 +12,10 @@ const TIMEOUT_MS = 60000 // 60s timeout pour les modèles lents
  * Modèles recommandés (Free Tier ou Low Cost)
  */
 export const AI_MODELS = {
-    GEMINI: 'google/gemini-2.0-flash-exp:free',
+    GEMINI: 'google/gemini-2.5-flash-exp-8b:free',
     MISTRAL: 'mistralai/mistral-7b-instruct:free',
     GPT4: 'openai/gpt-4o-mini', // Low cost
-    DEFAULT: 'google/gemini-2.0-flash-exp:free'
+    DEFAULT: 'google/gemini-2.5-flash-exp-8b:free'
 }
 
 /**
