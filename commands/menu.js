@@ -11,7 +11,7 @@ const FALLBACK_DESCRIPTION = {
 const COMMAND_METADATA = {
   add: { category: 'admin', descriptionFr: 'Ajouter un membre au groupe via son numéro.', descriptionEn: 'Add a member to the group using their number.' },
   advice: { category: 'user', descriptionFr: 'Recevoir un conseil aléatoire.', descriptionEn: 'Receive a random piece of advice.' },
-  ai: { category: 'user', descriptionFr: 'Conversation IA générique (GPT-4o-mini).', descriptionEn: 'Generic AI conversation (GPT-4o-mini).' },
+  ai: { category: 'user', descriptionFr: 'Conversation IA avec Gemini 2.0 Flash.', descriptionEn: 'AI conversation with Gemini 2.0 Flash.' },
   chat: { category: 'user', descriptionFr: 'Conversation IA avec mémoire contextuelle.', descriptionEn: 'AI conversation with contextual memory.' },
   chat: { category: 'user', descriptionFr: 'Conversation IA avec mémoire contextuelle.', descriptionEn: 'AI conversation with contextual memory.' },
   mistral: { category: 'user', descriptionFr: 'Envoyer un message à Mistral via OpenRouter.', descriptionEn: 'Send a message to Mistral via OpenRouter.' },
