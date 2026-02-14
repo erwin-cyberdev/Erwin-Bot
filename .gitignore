@@ -1,0 +1,8 @@
+node_modules/
+auth_info/
+.env
+tmp/
+logs/
+.DS_Store
+npm-debug.log
+.vscode/

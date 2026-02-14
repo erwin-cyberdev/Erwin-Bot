@@ -1,0 +1,232 @@
+// index.js — Erwin-Bot : QR ONLY + PAGE WEB
+import dotenv from 'dotenv'
+dotenv.config()
+
+import makeWASocket, {
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  useMultiFileAuthState
+} from '@whiskeysockets/baileys'
+
+import fs from 'fs'
+import path from 'path'
+import https from 'https'
+import chalk from 'chalk'
+import figlet from 'figlet'
+import P from 'pino'
+import { pathToFileURL } from 'url'
+import fetch from 'node-fetch'
+import { cache } from './utils/cache.js'
+
+// 🌐 WEB QR
+import express from 'express'
+import QRCode from 'qrcode'
+
+// --- utils sécurisés ---
+import { getPrefix } from './utils/prefixManager.js'
+import { sendText, attachSendWrapper } from './utils/messageQueue.js'
+import { initAntiDelete } from './handlers/antiDeleteHandler.js'
+import { initAutoPing } from './utils/autoPing.js'
+import { startHealthMonitoring } from './utils/botSecurity.js'
+
+// --- constantes ---
+const __dirname = process.cwd()
+const authDir = path.join(__dirname, 'auth_info')
+const cmdDir = path.join(__dirname, 'commands')
+
+// --- état QR ---
+let latestQR = null
+let isConnected = false
+
+// --- serveur web ---
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.get('/', (_, res) => {
+  res.send('🤖 Erwin-Bot est en ligne')
+})
+
+app.get('/qr', async (_, res) => {
+  if (isConnected) {
+    return res.send('✅ Bot déjà connecté à WhatsApp')
+  }
+
+  if (!latestQR) {
+    return res.send('⏳ QR code pas encore généré, recharge la page...')
+  }
+
+  const qrImage = await QRCode.toDataURL(latestQR)
+  res.send(`
+    <html>
+      <head><title>QR WhatsApp</title></head>
+      <body style="display:flex;flex-direction:column;align-items:center;font-family:sans-serif">
+        <h2>📱 Scanner le QR WhatsApp</h2>
+        <img src="${qrImage}" />
+        <p>Recharge si le QR expire</p>
+      </body>
+    </html>
+  `)
+})
+
+app.listen(PORT, () => {
+  console.log(`🌍 Serveur QR actif sur le port ${PORT}`)
+})
+
+// --- helpers ---
+const sleep = (ms) => new Promise(res => setTimeout(res, ms))
+
+function header() {
+  console.clear()
+  console.log(chalk.cyan(figlet.textSync('Erwin-Bot', { horizontalLayout: 'full' })))
+  console.log(chalk.gray('by ') + chalk.magenta('FUDJING Manuel Erwin'))
+  console.log(chalk.gray('────────────────────────────────────────────'))
+}
+
+// --- réseau ---
+function checkNetworkTimeout(url = 'https://web.whatsapp.com', timeout = 3000) {
+  return new Promise((resolve) => {
+    const req = https.get(url, (res) => {
+      res.resume()
+      resolve({ ok: true })
+    })
+    req.on('error', () => resolve({ ok: false }))
+    req.setTimeout(timeout, () => {
+      req.destroy()
+      resolve({ ok: false })
+    })
+  })
+}
+
+// --- keep-alive ---
+function startKeepAlive() {
+  const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 3000}`
+  console.log(`📡 Keep-Alive activé sur: ${url}`)
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(url)
+      if (res.ok) console.log(`📡 Keep-Alive ping OK (${res.status})`)
+      else console.log(`⚠️ Keep-Alive ping error: ${res.status}`)
+    } catch (e) {
+      console.log(`⚠️ Keep-Alive ping failed: ${e.message}`)
+    }
+  }, 14 * 60 * 1000) // 14 minutes (Render sleep = 15min)
+}
+
+// --- loader commandes ---
+async function loadCommands() {
+  const map = new Map()
+  if (!fs.existsSync(cmdDir)) fs.mkdirSync(cmdDir, { recursive: true })
+
+  for (const f of fs.readdirSync(cmdDir).filter(f => f.endsWith('.js'))) {
+    const mod = await import(pathToFileURL(path.join(cmdDir, f)).href)
+    if (mod?.default) map.set(f.replace('.js', ''), mod.default)
+  }
+  return map
+}
+
+// --- reply ---
+function reply(sock, jid, msg, text) {
+  return sendText(sock, jid, text, { quoted: msg })
+}
+
+// --- START ---
+async function start() {
+  header()
+
+  /* original code */
+  const net = await checkNetworkTimeout()
+  console.log(net.ok ? '🌐 Réseau OK' : '⚠️ Réseau KO')
+
+  startKeepAlive()
+
+  if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
+
+  const { version } = await fetchLatestBaileysVersion()
+  const { state, saveCreds } = await useMultiFileAuthState(authDir)
+  const commands = await loadCommands()
+  const logger = P({ level: 'silent' })
+
+  async function createSocket() {
+    const sock = makeWASocket({
+      logger,
+      auth: state,
+      version,
+      printQRInTerminal: true,
+      browser: ['Erwin-Bot', 'Chrome', '121'],
+      markOnlineOnConnect: true,
+      syncFullHistory: false,
+      getMessage: async () => ({ conversation: '' })
+    })
+
+    attachSendWrapper(sock)
+    initAntiDelete(sock)
+    initAutoPing(sock)
+
+    // 🔁 AUTO-PING toutes les 5 minutes (anti-sleep / keep-alive)
+    setInterval(() => {
+      if (!isConnected) return
+
+      try {
+        // ping léger vers WhatsApp (soi-même)
+        sock.sendPresenceUpdate('available')
+        console.log('💓 Auto-ping envoyé (5 min)')
+      } catch (e) {
+        console.log('⚠️ Auto-ping échoué')
+      }
+    }, 1 * 60 * 1000)
+
+    sock.ev.on('creds.update', saveCreds)
+
+    sock.ev.on('connection.update', (upd) => {
+      const { connection, lastDisconnect, qr } = upd
+
+      // 📲 QR WEB
+      if (qr && !state.creds.registered) {
+        latestQR = qr
+        console.log('📲 QR généré → /qr')
+      }
+
+      if (connection === 'open') {
+        isConnected = true
+        latestQR = null
+        console.log('✅ WhatsApp connecté')
+        startHealthMonitoring(60000)
+      }
+
+      if (connection === 'close') {
+        const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
+        isConnected = false
+        console.log('❌ Déconnecté', shouldReconnect ? ', reconnexion…' : ', session terminée.')
+        if (shouldReconnect) createSocket()
+      }
+    })
+
+    sock.ev.on('messages.upsert', async ({ messages }) => {
+      const msg = messages?.[0]
+      if (!msg?.message) return
+
+      const from = msg.key.remoteJid
+      const text =
+        msg.message.conversation ||
+        msg.message.extendedTextMessage?.text ||
+        ''
+
+      if (!text.startsWith(getPrefix())) return
+
+      const [cmd, ...args] = text.slice(getPrefix().length).trim().split(/\s+/)
+      const fn = commands.get(cmd.toLowerCase())
+      if (!fn) return
+
+      try {
+        await fn(sock, msg, args)
+      } catch {
+        reply(sock, from, msg, '⚠️ Erreur commande')
+      }
+    })
+  }
+
+  createSocket()
+}
+
+start().catch(console.error)
