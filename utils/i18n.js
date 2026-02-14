@@ -79,21 +79,44 @@ export function formatMenuSections(sections, langPreference) {
   const lines = []
 
   langs.forEach((lang, index) => {
-    lines.push(translations.menu.header[lang])
-    lines.push(translations.menu.availableCount[lang](sections.total))
+    // Header with premium styling
+    lines.push('```')
+    lines.push('═══════════════════════════════')
+    lines.push('    E R W I N  -  B O T')
+    lines.push('═══════════════════════════════')
+    lines.push('```')
+    lines.push('')
+    lines.push(`*${translations.menu.availableCount[lang](sections.total)}*`)
+    lines.push('```───────────────────────────────```')
     lines.push('')
 
     sections.categories.forEach(({ key, commands }) => {
       if (!commands.length) return
-      lines.push(`[${translations.menu.categories[key][lang]}]`)
+
+      // Category header with premium styling
+      const categoryName = translations.menu.categories[key][lang]
+      lines.push('```')
+      lines.push(`┌─────────────────────────────┐`)
+      lines.push(`│ ${categoryName.padEnd(27)} │`)
+      lines.push(`└─────────────────────────────┘`)
+      lines.push('```')
+
+      // Commands with premium styling
       commands.forEach(({ name, description }) => {
-        lines.push(`- ➤ .${name} — ${description[lang] || description.fr || description.en || ''}`)
+        const desc = description[lang] || description.fr || description.en || ''
+        lines.push(`*\`.${name}\`*`)
+        lines.push(`_${desc}_`)
+        lines.push('')
       })
-      lines.push('')
     })
 
+    // Footer
+    lines.push('```═══════════════════════════════```')
+    lines.push('_Powered by OpenRouter AI_')
+    lines.push('')
+
     if (index < langs.length - 1) {
-      lines.push('──────────────────────────────')
+      lines.push('```───────────────────────────────```')
       lines.push('')
     }
   })
