@@ -13,7 +13,7 @@ const COMMAND_METADATA = {
   advice: { category: 'user', descriptionFr: 'Recevoir un conseil aléatoire.', descriptionEn: 'Receive a random piece of advice.' },
   ai: { category: 'user', descriptionFr: 'Conversation IA générique (GPT-4o-mini).', descriptionEn: 'Generic AI conversation (GPT-4o-mini).' },
   chat: { category: 'user', descriptionFr: 'Conversation IA avec mémoire contextuelle.', descriptionEn: 'AI conversation with contextual memory.' },
-  gemini: { category: 'user', descriptionFr: 'Envoyer un message à Gemini via OpenRouter.', descriptionEn: 'Send a message to Gemini via OpenRouter.' },
+  chat: { category: 'user', descriptionFr: 'Conversation IA avec mémoire contextuelle.', descriptionEn: 'AI conversation with contextual memory.' },
   mistral: { category: 'user', descriptionFr: 'Envoyer un message à Mistral via OpenRouter.', descriptionEn: 'Send a message to Mistral via OpenRouter.' },
   anime: { category: 'user', descriptionFr: 'Chercher des informations sur un anime.', descriptionEn: 'Search for information about an anime.' },
   animequote: { category: 'user', descriptionFr: 'Afficher une citation d’anime.', descriptionEn: 'Display an anime quote.' },
