@@ -148,6 +148,6 @@ export default async function geminiCommand(sock, msg, args = []) {
 
     try {
       await sock.sendMessage(from, { text: message }, { quoted: msg })
-    } catch {}
+    } catch { }
   }
 }

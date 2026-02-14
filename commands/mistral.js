@@ -122,6 +122,6 @@ Modèles disponibles : mixtral-8x7b | mistral-small`
 
     try {
       await sock.sendMessage(from, { text: message }, { quoted: msg })
-    } catch {}
+    } catch { }
   }
 }
