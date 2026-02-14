@@ -257,13 +257,9 @@ async function start() {
       let loginMode = chosenLoginMode
       const isRegistered = !!state?.creds?.registered
       if (!isRegistered) {
-        if (loginMode === 'ask' || (loginMode !== 'qr' && loginMode !== 'code')) {
-          loginMode = await chooseLoginMode()
-        }
-        chosenLoginMode = loginMode
-      } else if (loginMode !== 'qr') {
-        loginMode = 'qr'
-        chosenLoginMode = loginMode
+        // Mode QR forcé - Bypass prompt
+        console.log(chalk.cyan('📱 Mode QR Code forcé par défaut'))
+        chosenLoginMode = 'qr'
       }
 
       if (chosenLoginMode !== loginMode) {
