@@ -19,7 +19,7 @@ const translations = {
       owner: { fr: 'PROPRIÉTAIRE', en: 'OWNER' }
     },
     footerError: {
-      fr: '❌ Impossible d’afficher le menu.',
+      fr: '❌ Impossible d'afficher le menu.',
       en: '❌ Unable to display the menu.'
     }
   },
@@ -74,49 +74,162 @@ function getLanguageList(langPreference) {
   }
 }
 
+// Patterns arborescents qui changent chaque jour
+const TREE_PATTERNS = [
+  {
+    header: [
+      '```',
+      '       ╔═══════════════════════════╗',
+      '       ║   E R W I N - B O T   ║',
+      '       ╚═══════════════════════════╝',
+      '```'
+    ],
+    categoryTop: '    ╭─────────────────────────────╮',
+    categoryMid: '    │',
+    categoryBot: '    ╰─────────────────────────────╯',
+    commandPrefix: '      ├─',
+    commandLast: '      └─',
+    divider: '```═══════════════════════════════════```'
+  },
+  {
+    header: [
+      '```',
+      '      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓',
+      '      ┃  E R W I N - B O T  ┃',
+      '      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛',
+      '```'
+    ],
+    categoryTop: '    ┌─────────────────────────────┐',
+    categoryMid: '    │',
+    categoryBot: '    └─────────────────────────────┘',
+    commandPrefix: '      ▸',
+    commandLast: '      ▸',
+    divider: '```━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━```'
+  },
+  {
+    header: [
+      '```',
+      '    ╒═════════════════════════════╕',
+      '    │   E R W I N - B O T   │',
+      '    ╘═════════════════════════════╛',
+      '```'
+    ],
+    categoryTop: '    ┌───────────────────────────────┐',
+    categoryMid: '    ├',
+    categoryBot: '    └───────────────────────────────┘',
+    commandPrefix: '      ╰──▸',
+    commandLast: '      ╰──▸',
+    divider: '```═══════════════════════════════════```'
+  },
+  {
+    header: [
+      '```',
+      '     ╭━━━━━━━━━━━━━━━━━━━━━━━━━━╮',
+      '     ┃  E R W I N - B O T  ┃',
+      '     ╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
+      '```'
+    ],
+    categoryTop: '    ╔═══════════════════════════════╗',
+    categoryMid: '    ║',
+    categoryBot: '    ╚═══════════════════════════════╝',
+    commandPrefix: '      ⟩',
+    commandLast: '      ⟩',
+    divider: '```━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━```'
+  },
+  {
+    header: [
+      '```',
+      '    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄',
+      '    █ E R W I N - B O T █',
+      '    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀',
+      '```'
+    ],
+    categoryTop: '    ╭───────────────────────────────╮',
+    categoryMid: '    │',
+    categoryBot: '    ╰───────────────────────────────╯',
+    commandPrefix: '      →',
+    commandLast: '      →',
+    divider: '```▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬```'
+  },
+  {
+    header: [
+      '```',
+      '   ╔════════════════════════════╗',
+      '   ║  ERWIN-BOT  ║',
+      '   ╠════════════════════════════╣',
+      '```'
+    ],
+    categoryTop: '    ╔═══════════════════════════════╗',
+    categoryMid: '    ║',
+    categoryBot: '    ╚═══════════════════════════════╝',
+    commandPrefix: '      ╟─',
+    commandLast: '      ╙─',
+    divider: '```╠════════════════════════════════╣```'
+  },
+  {
+    header: [
+      '```',
+      '    ┏┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┓',
+      '    ┇ E R W I N - B O T ┇',
+      '    ┗┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┛',
+      '```'
+    ],
+    categoryTop: '    ╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╮',
+    categoryMid: '    ┊',
+    categoryBot: '    ╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╯',
+    commandPrefix: '      ⊳',
+    commandLast: '      ⊳',
+    divider: '```┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅┅```'
+  }
+]
+
+function getDailyPattern() {
+  const today = new Date()
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24)
+  return TREE_PATTERNS[dayOfYear % TREE_PATTERNS.length]
+}
+
 export function formatMenuSections(sections, langPreference) {
   const langs = getLanguageList(langPreference)
   const lines = []
+  const pattern = getDailyPattern()
 
   langs.forEach((lang, index) => {
-    // Header with premium styling
-    lines.push('```')
-    lines.push('═══════════════════════════════')
-    lines.push('    E R W I N  -  B O T')
-    lines.push('═══════════════════════════════')
-    lines.push('```')
+    // Header with daily pattern
+    pattern.header.forEach(line => lines.push(line))
     lines.push('')
     lines.push(`*${translations.menu.availableCount[lang](sections.total)}*`)
-    lines.push('```───────────────────────────────```')
+    lines.push(pattern.divider)
     lines.push('')
 
     sections.categories.forEach(({ key, commands }) => {
       if (!commands.length) return
 
-      // Category header with premium styling
+      // Category header with pattern
       const categoryName = translations.menu.categories[key][lang]
       lines.push('```')
-      lines.push(`┌─────────────────────────────┐`)
-      lines.push(`│ ${categoryName.padEnd(27)} │`)
-      lines.push(`└─────────────────────────────┘`)
+      lines.push(pattern.categoryTop)
+      lines.push(`${pattern.categoryMid} ${categoryName.padEnd(27)} ${pattern.categoryMid}`)
+      lines.push(pattern.categoryBot)
       lines.push('```')
 
-      // Commands with premium styling
-      commands.forEach(({ name, description }) => {
+      // Commands with tree-like structure
+      commands.forEach(({ name, description }, idx) => {
         const desc = description[lang] || description.fr || description.en || ''
-        lines.push(`*\`.${name}\`*`)
-        lines.push(`_${desc}_`)
+        const prefix = idx === commands.length - 1 ? pattern.commandLast : pattern.commandPrefix
+        lines.push(`${prefix} *\`.${name}\`*`)
+        lines.push(`        _${desc}_`)
         lines.push('')
       })
     })
 
     // Footer
-    lines.push('```═══════════════════════════════```')
+    lines.push(pattern.divider)
     lines.push('_Powered by OpenRouter AI_')
     lines.push('')
 
     if (index < langs.length - 1) {
-      lines.push('```───────────────────────────────```')
+      lines.push(pattern.divider)
       lines.push('')
     }
   })
