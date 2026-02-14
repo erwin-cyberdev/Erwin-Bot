@@ -19,7 +19,7 @@ const translations = {
       owner: { fr: 'PROPRIÉTAIRE', en: 'OWNER' }
     },
     footerError: {
-      fr: '❌ Impossible d'afficher le menu.',
+      fr: '❌ Impossible d\'afficher le menu.',
       en: '❌ Unable to display the menu.'
     }
   },
