@@ -1585,5 +1585,90 @@
       "bots": false
     },
     "language": "fr"
+  },
+  "120363421109833571@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363420897876046@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363423186934558@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363400549713984@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363423616044329@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
   }
 }

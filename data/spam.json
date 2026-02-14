@@ -338,8 +338,22 @@
     ],
     "102160729637002@lid": [
       {
-        "command": "extract",
-        "timestamp": 1770280821021
+        "command": "menu",
+        "timestamp": 1770674868528
+      }
+    ],
+    "113189836562603@lid": [
+      {
+        "command": "ban",
+        "timestamp": 1770669798509
+      },
+      {
+        "command": "adminonly",
+        "timestamp": 1770669808361
+      },
+      {
+        "command": "adminonly",
+        "timestamp": 1770669813373
       }
     ]
   },
@@ -863,8 +877,33 @@
     "102160729637002@lid": {
       "actions": [
         {
-          "action": "extract",
-          "timestamp": 1770280821021
+          "action": "ping",
+          "timestamp": 1770674577817
+        },
+        {
+          "action": "gemini",
+          "timestamp": 1770674588263
+        },
+        {
+          "action": "menu",
+          "timestamp": 1770674868529
+        }
+      ],
+      "score": 0
+    },
+    "113189836562603@lid": {
+      "actions": [
+        {
+          "action": "ban",
+          "timestamp": 1770669798510
+        },
+        {
+          "action": "adminonly",
+          "timestamp": 1770669808361
+        },
+        {
+          "action": "adminonly",
+          "timestamp": 1770669813373
         }
       ],
       "score": 0

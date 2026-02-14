@@ -1,22 +1,35 @@
-/**
- * ai.js — Commande générique AI via OpenRouter
- * Utilise gpt-4o-mini ou gemini-2.0-flash selon dispo
- */
-const MAX_WH_TEXT = 6500
-const safeReply =
-    response.length > MAX_WH_TEXT
-        ? `${response.slice(0, MAX_WH_TEXT - 200)}\n\n(↘️ tronqué)`
-        : response
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-await sock.sendMessage(
-    from,
-    { text: `🤖 *IA :*\n\n${safeReply}` },
-    { quoted: msg }
-)
+// Clé API Gemini fournie par l'utilisateur
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
 
-    } catch (err) {
-    console.error('❌ Erreur AI (OpenRouter) :', err)
-    let message = `❗ Erreur : ${err.message}`
-    await sock.sendMessage(from, { text: message }, { quoted: msg })
-}
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+
+export default async function aiCommand(sock, msg, args) {
+    const from = msg.key.remoteJid
+    const prompt = args.join(' ')
+
+    if (!prompt) {
+        await sock.sendMessage(from, { text: '💡 Utilisation : `.ai <votre question>`' }, { quoted: msg })
+        return
+    }
+
+    await sock.sendMessage(from, { text: '🧠 Gemini réfléchit...' }, { quoted: msg })
+
+    try {
+        const result = await model.generateContent(prompt)
+        const response = await result.response
+        const text = response.text()
+
+        if (!text) throw new Error('Réponse vide de Gemini')
+
+        await sock.sendMessage(from, { text: `✨ *Réponse Gemini :*\n\n${text}` }, { quoted: msg })
+
+    } catch (error) {
+        console.error('Erreur Gemini SDK:', error)
+        await sock.sendMessage(from, {
+            text: '❌ Une erreur est survenue avec Gemini. Vérifiez la clé API ou réessayez plus tard.'
+        }, { quoted: msg })
+    }
 }
