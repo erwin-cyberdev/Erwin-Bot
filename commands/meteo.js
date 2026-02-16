@@ -56,7 +56,7 @@ export default async function (sock, msg, args) {
     return await sock.sendMessage(from, { text: '❗ Merci de préciser une ville valide.' }, { quoted: msg })
   }
 
-  const apiKey = process.env.OPENWEATHER_API_KEY
+  const apiKey = '6712b56eadfa17faaedf05e03c6593c0'
 
   if (!apiKey) {
     return await sock.sendMessage(from, {

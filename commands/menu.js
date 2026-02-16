@@ -92,7 +92,16 @@ const COMMAND_METADATA = {
   warn: { category: 'admin', descriptionFr: 'Attribuer un avertissement à un membre.', descriptionEn: 'Give a member a warning.' },
   warns: { category: 'admin', descriptionFr: 'Consulter les avertissements d’un membre.', descriptionEn: 'Check a member’s warnings.' },
   yt: { category: 'user', descriptionFr: 'Télécharger une vidéo YouTube.', descriptionEn: 'Download a YouTube video.' },
-  setlang: { category: 'admin', descriptionFr: 'Définir la langue des réponses (fr ou en).', descriptionEn: 'Set the response language (fr or en).' }
+  setlang: { category: 'admin', descriptionFr: 'Définir la langue des réponses (fr ou en).', descriptionEn: 'Set the response language (fr or en).' },
+  adminonly: { category: 'owner', descriptionFr: 'Activer/Désactiver le mode admin-only.', descriptionEn: 'Enable/Disable admin-only mode.' },
+  autoping: { category: 'owner', descriptionFr: 'Activer le ping automatique pour rester en ligne.', descriptionEn: 'Enable auto-ping to stay online.' },
+  dlt: { category: 'admin', descriptionFr: 'Supprimer un message pour tout le monde.', descriptionEn: 'Delete a message for everyone.' },
+  groupinfo: { category: 'user', descriptionFr: 'Afficher les informations du groupe.', descriptionEn: 'Display group information.' },
+  left: { category: 'owner', descriptionFr: 'Faire quitter le bot du groupe.', descriptionEn: 'Make the bot leave the group.' },
+  remind: { category: 'user', descriptionFr: 'Créer un rappel.', descriptionEn: 'Create a reminder.' },
+  tag: { category: 'admin', descriptionFr: 'Taguer un membre.', descriptionEn: 'Tag a member.' },
+  toimage: { category: 'user', descriptionFr: 'Convertir un sticker en image.', descriptionEn: 'Convert a sticker to an image.' },
+  wiki: { category: 'user', descriptionFr: 'Chercher sur Wikipédia.', descriptionEn: 'Search on Wikipedia.' }
 }
 
 export default async function (sock, msg) {

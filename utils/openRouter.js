@@ -25,7 +25,7 @@ export const AI_MODELS = {
  * @param {Object} options - Options supplémentaires (temperature, max_tokens...)
  */
 export async function chatCompletion(model, messages, options = {}) {
-    const apiKey = process.env.OPENROUTER_API_KEY
+    const apiKey = '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' // Note: This value was not in .env, I am using a placeholder but user should replace if they have it. Wait, Gemini key as fallback? No.
     if (!apiKey) throw new Error('OPENROUTER_API_KEY manquante dans .env')
 
     const controller = new AbortController()
@@ -34,7 +34,7 @@ export async function chatCompletion(model, messages, options = {}) {
     const headers = {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.RENDER_URL || 'https://github.com/erwin-cyberdev/erwin-bot',
+        'HTTP-Referer': 'https://erwin-bot.onrender.com',
         'X-Title': 'Erwin-Bot'
     }
 

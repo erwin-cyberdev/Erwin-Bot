@@ -41,10 +41,11 @@ const rand = (n) => Math.floor(Math.random() * n)
 
 // --- Serveur Web & Keep-Alive ---
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = 3000
 let lastQR = null
 
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
+app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l\'endpoint health
 app.get('/qr', (req, res) => {
   if (lastQR) {
     res.setHeader('Content-Type', 'image/png')
@@ -60,8 +61,13 @@ app.get('/qr', (req, res) => {
 app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
 
 function startKeepAlive() {
-  const url = process.env.RENDER_EXTERNAL_URL || process.env.RENDER_URL
+  const url = 'https://erwin-bot.onrender.com'
   if (!url) return
+
+  // Singleton pour éviter les doublons de ping
+  if (global.keepAliveStarted) return
+  global.keepAliveStarted = true
+
   setInterval(async () => {
     try {
       await axios.get(url)
@@ -70,6 +76,7 @@ function startKeepAlive() {
       console.error('⚓ Keep-alive ping failed:', e.message)
     }
   }, 3 * 60 * 1000) // 3 minutes
+  console.log(chalk.blue('⚓ Keep-alive system started'))
 }
 
 // --- Cache optimisé pour les métadonnées ---
@@ -173,6 +180,7 @@ function reply(sock, remoteJid, msg, text) {
 
 // --- fonction principale ---
 async function start() {
+  startKeepAlive() // Démarrage immédiat du keep-alive
   header()
   const net = await checkNetworkTimeout()
   if (!net.ok) console.log(chalk.red('⚠️ Vérification réseau échouée :'), net.err)
@@ -292,9 +300,7 @@ async function start() {
           lastQR = null
           if (qrTimeout) clearTimeout(qrTimeout)  // Nettoyer timeout
 
-          startKeepAlive()
-
-          console.log(chalk.green('\n' + '═'.repeat(60)))
+          // Démarrer le monitoring de sécurité
           console.log(chalk.green.bold('✅ CONNEXION RÉUSSIE!'))
           console.log(chalk.green('═'.repeat(60)))
           console.log(chalk.cyan(`\n📱 Bot connecté à WhatsApp`))

@@ -88,7 +88,7 @@ async function fetchNews(apiKey, topic, lang) {
 export default async function newsCommand(sock, msg, args) {
   const from = msg.key.remoteJid
   const lang = getLanguagePreference(from)
-  const apiKey = process.env.NEWSAPI_KEY
+  const apiKey = 'f4c35ab232d34163acf9824116fb9bab'
 
   if (!apiKey) {
     await sock.sendMessage(from, { text: t('missingKey', lang) }, { quoted: msg })

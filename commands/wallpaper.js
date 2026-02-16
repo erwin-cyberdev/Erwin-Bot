@@ -46,7 +46,7 @@ async function fetchWallpaper(accessKey, query) {
 
 export default async function wallpaperCommand(sock, msg, args) {
   const from = msg.key.remoteJid
-  const accessKey = process.env.UNSPLASH_ACCESS_KEY
+  const accessKey = '7aMKNS-_NXhfiUW4kBP-zXqPiI2OFKAXc4UNCcGV5kk'
 
   if (!accessKey) {
     return sock.sendMessage(from, {

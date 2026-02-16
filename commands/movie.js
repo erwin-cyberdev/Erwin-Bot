@@ -3,7 +3,7 @@ import axios from 'axios'
 
 export default async function (sock, msg, args) {
   const from = msg.key.remoteJid
-  const apiKey = process.env.OMDB_API_KEY
+  const apiKey = '497e993b'
 
   if (!apiKey) {
     return await sock.sendMessage(from, {
