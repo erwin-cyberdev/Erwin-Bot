@@ -37,11 +37,7 @@ Réponds à un message vocal avec \`.transcribe\`
     }
 
     // Check API key
-    if (!process.env.OPENROUTER_API_KEY) {
-        return sock.sendMessage(from, {
-            text: '⚠️ OPENROUTER_API_KEY manquante dans .env'
-        }, { quoted: msg })
-    }
+    // API Key is hardcoded below
 
     await sock.sendMessage(from, {
         text: '🎤 Transcription en cours...'
