@@ -61,7 +61,7 @@ app.get('/qr', (req, res) => {
 app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
 
 function startKeepAlive() {
-  const url = 'https://erwin-bot.onrender.com'
+  const url = RENDER_URL
   if (!url) return
 
   // Singleton pour éviter les doublons de ping

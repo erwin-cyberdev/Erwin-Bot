@@ -1,5 +1,5 @@
 // commands/add.js
-export default async function(sock, msg, args) {
+export default async function (sock, msg, args) {
   const from = msg.key.remoteJid
   const sender = msg.key.participant || msg.key.remoteJid
 
@@ -38,8 +38,7 @@ export default async function(sock, msg, args) {
       return await sock.sendMessage(from, { text: '📞 *Usage:* .add <numéro1> <numéro2> ...' })
     }
 
-    const botNumberRaw = process.env.WA_NUMBER || sock.user?.id || ''
-    const botDigits = (botNumberRaw || '').replace(/[^0-9]/g, '')
+    const botDigits = (sock.user?.id || '').replace(/[^0-9]/g, '')
     const defaultCountryCode = botDigits.length > 9 ? botDigits.slice(0, botDigits.length - 9) : '237'
 
     const seen = new Set()

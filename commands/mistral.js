@@ -93,10 +93,10 @@ Modèles disponibles : mixtral-8x7b | mistral-small`
     }, { quoted: msg })
   }
 
-  const apiKey = process.env.MISTRAL_API_KEY
-  if (!apiKey) {
+  const apiKey = 'sk-MISTRAL-PLACEHOLDER'
+  if (!apiKey || apiKey.includes('PLACEHOLDER')) {
     return sock.sendMessage(from, {
-      text: '⚠️ Clé `MISTRAL_API_KEY` manquante. Ajoute-la dans ton `.env`.'
+      text: '⚠️ Clé API Mistral non configurée.'
     }, { quoted: msg })
   }
 

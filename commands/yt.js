@@ -7,7 +7,7 @@ import ytdlp from 'yt-dlp-exec'
 import { sendText, sendVideo } from '../utils/messageQueue.js'
 
 const TEMP_DIR = path.resolve('./tmp/video')
-const MAX_MEDIA_BYTES = parseInt(process.env.MAX_MEDIA_BYTES || String(50 * 1024 * 1024), 10) // 50 MB default
+const MAX_MEDIA_BYTES = 50 * 1024 * 1024 // 50 MB default
 
 function isYouTubeUrl(s = '') {
   return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(s)
@@ -16,7 +16,7 @@ function isYouTubeUrl(s = '') {
 async function ensureTempDir() {
   try {
     await fs.mkdir(TEMP_DIR, { recursive: true })
-  } catch {}
+  } catch { }
 }
 
 export default async function ytCommand(sock, msg, args = []) {
@@ -40,7 +40,7 @@ export default async function ytCommand(sock, msg, args = []) {
       try {
         const parsed = await yts({ videoId: new URL(url).searchParams.get('v') })
         videoInfo = parsed?.videos?.[0] || null
-      } catch {}
+      } catch { }
     }
 
     const { title, timestamp, views, ago, author, thumbnail } = videoInfo || {}
@@ -104,7 +104,7 @@ export default async function ytCommand(sock, msg, args = []) {
 
       if (fileData.length > MAX_MEDIA_BYTES) {
         const sizeMB = (fileData.length / (1024 * 1024)).toFixed(2)
-        await sendText(sock, from, `🚫 Fichier trop volumineux (${sizeMB} MB). Limite: ${Math.round(MAX_MEDIA_BYTES/1024/1024)} MB.`, { quoted: msg })
+        await sendText(sock, from, `🚫 Fichier trop volumineux (${sizeMB} MB). Limite: ${Math.round(MAX_MEDIA_BYTES / 1024 / 1024)} MB.`, { quoted: msg })
         return
       }
 
@@ -128,11 +128,11 @@ export default async function ytCommand(sock, msg, args = []) {
       console.error('yt-dlp video error:', downloadErr)
       await sendText(sock, from, '❗ Impossible de télécharger cette vidéo. Elle est peut-être privée ou restreinte.', { quoted: msg })
     } finally {
-      try { await fs.rm(outputPath, { force: true }) } catch {}
+      try { await fs.rm(outputPath, { force: true }) } catch { }
     }
 
   } catch (err) {
     console.error('yt command error:', err)
-    try { await sendText(sock, from, '❗ Erreur YouTube.', { quoted: msg }) } catch {}
+    try { await sendText(sock, from, '❗ Erreur YouTube.', { quoted: msg }) } catch { }
   }
 }

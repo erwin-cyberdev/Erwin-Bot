@@ -8,8 +8,8 @@ export default async function (sock, msg) {
 
   // Vérifier que c'est le owner
   if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
+    return await sock.sendMessage(from, {
+      text: '⛔ Cette commande est réservée au propriétaire du bot.'
     }, { quoted: msg })
   }
 
@@ -60,8 +60,8 @@ export default async function (sock, msg) {
 
 🤖 *Bot*
 • Version Node : ${process.version}
-• Owner : ${process.env.OWNER || 'Non défini'}
-• Nom : ${process.env.BOT_NAME || 'Erwin-Bot'}
+• Owner : Erwin
+• Nom : Erwin-Bot
 
 ━━━━━━━━━━━━━━━━━━━━
 `.trim()

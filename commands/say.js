@@ -56,10 +56,11 @@ export default async function (sock, msg, args) {
 
     if (useAI) {
       // Utiliser l'IA pour générer du contenu via OpenRouter
-      const apiKey = process.env.OPENROUTER_API_KEY
-      if (!apiKey) {
+      // API Key is hardcoded in openRouter.js
+      const apiKey = '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'
+      if (!apiKey || apiKey.includes('PLACEHOLDER')) {
         return sock.sendMessage(from, {
-          text: '❌ OPENROUTER_API_KEY non configurée pour le mode IA.\n\nUtilise .say sans "ai" pour le mode normal.'
+          text: '❌ OPENROUTER_API_KEY non configurée dans le code.'
         }, { quoted: msg })
       }
 

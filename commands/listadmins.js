@@ -7,13 +7,13 @@ export default async function (sock, msg) {
 
   // Vérifier que c'est le owner
   if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
+    return await sock.sendMessage(from, {
+      text: '⛔ Cette commande est réservée au propriétaire du bot.'
     }, { quoted: msg })
   }
 
   const admins = getAdmins()
-  const owner = process.env.OWNER || 'Non défini'
+  const owner = '237674151474' // Primary owner number
 
   let text = '👑 *Liste des admins du bot*\n\n'
   text += `🔰 Owner : @${owner}\n\n`

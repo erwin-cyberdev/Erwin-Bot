@@ -33,9 +33,9 @@ export default async function (sock, msg) {
     // package.json
     const pkgPath = path.resolve(cwd, 'package.json')
     const pkg = fs.existsSync(pkgPath) ? JSON.parse(fs.readFileSync(pkgPath, 'utf8')) : {}
-    const name = process.env.BOT_NAME || pkg.name || 'Erwin-Bot'
-    const version = pkg.version || process.env.BOT_VERSION || '?.?.?'
-    const owner = process.env.OWNER || (pkg.author && (typeof pkg.author === 'string' ? pkg.author : pkg.author.name)) || 'Owner'
+    const name = 'Erwin-Bot'
+    const version = pkg.version || '1.0.0'
+    const owner = 'Erwin'
 
     // system & process info
     const nodeVer = process.version
@@ -67,15 +67,11 @@ export default async function (sock, msg) {
     const repoLine = repo ? `🔗 Repo: ${repo.replace(/^git\+/, '')}` : ''
 
     // social media links
-    const github = process.env.CREATOR_GITHUB || ''
-    const linkedin = process.env.CREATOR_LINKEDIN || ''
-    const instagram = process.env.CREATOR_INSTAGRAM || ''
-    const whatsapp = process.env.CREATOR_WHATSAPP || ''
-    
+    const github = 'https://github.com/erwin-cyberdev'
+    const whatsapp = '237674151474'
+
     const socialLinks = []
     if (github) socialLinks.push(`   • GitHub: ${github}`)
-    if (linkedin) socialLinks.push(`   • LinkedIn: ${linkedin}`)
-    if (instagram) socialLinks.push(`   • Instagram: ${instagram}`)
     if (whatsapp) socialLinks.push(`   • WhatsApp: ${whatsapp}`)
     const socialSection = socialLinks.length ? `\n🔗 Réseaux du créateur :\n${socialLinks.join('\n')}` : ''
 
@@ -127,6 +123,6 @@ export default async function (sock, msg) {
     console.error('info.js error:', err)
     try {
       await sock.sendMessage(from, { text: '❌ Impossible d\'afficher les infos pour le moment.' }, { quoted: msg })
-    } catch {}
+    } catch { }
   }
 }

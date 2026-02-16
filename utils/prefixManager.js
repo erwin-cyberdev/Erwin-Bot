@@ -12,7 +12,7 @@ function getConfig() {
   } catch (error) {
     console.error('Erreur lors de la lecture du fichier de préfixe:', error)
   }
-  return { prefix: '!' } // Valeur par défaut
+  return { prefix: '!' }
 }
 
 // Fonction utilitaire pour écrire dans le fichier de configuration
@@ -38,32 +38,32 @@ export function setPrefix(newPrefix) {
   if (typeof newPrefix !== 'string' || newPrefix.length === 0 || newPrefix.length > 3) {
     return { success: false, message: 'Le préfixe doit être une chaîne de 1 à 3 caractères' }
   }
-  
+
   const config = getConfig()
   config.prefix = newPrefix
-  
+
   if (setConfig(config)) {
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: `Préfixe mis à jour avec succès : ${newPrefix}`,
       prefix: newPrefix
     }
   }
-  
+
   return { success: false, message: 'Erreur lors de la mise à jour du préfixe' }
 }
 
 export function resetPrefix() {
   const config = getConfig()
   config.prefix = '!'
-  
+
   if (setConfig(config)) {
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: 'Préfixe réinitialisé avec succès',
       prefix: '!'
     }
   }
-  
+
   return { success: false, message: 'Erreur lors de la réinitialisation du préfixe' }
 }

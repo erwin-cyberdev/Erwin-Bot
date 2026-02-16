@@ -73,7 +73,7 @@ Réponds à une image avec .vision [question optionnelle]
 
   try {
     // Use OPENROUTER_API_KEY if available, fallback to GEMINI_API_KEY
-    const apiKey = process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY
+    const apiKey = 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
 
     if (!apiKey) {
       return sock.sendMessage(from, {

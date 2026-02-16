@@ -3,8 +3,8 @@ import { getLanguagePreference } from '../utils/messageHelpers.js'
 
 const REQUEST_TIMEOUT = 10000
 // Configuration de l'API Bible
-const BIBLE_API_BASE = process.env.BIBLE_API_BASE_URL || 'https://bible-api.com'
-const BIBLE_API_KEY = process.env.BIBLE_API_KEY
+const BIBLE_API_BASE = 'https://bible-api.com'
+const BIBLE_API_KEY = ''
 
 const BIBLE_VERSIONS = {
   'LSG': { label: { fr: 'Louis Segond 1910', en: 'Louis Segond 1910' } },
@@ -317,18 +317,19 @@ async function fetchVerse(bookCanonical, chapter, verse, apiBase, lang) {
       // Construire l'URL pour bible-api.com
       const bookPath = `${osisBook}+${chapter}:${verse}`
       const url = `${apiBase}/${bookPath}?translation=${versionCode}`
-      
-      const response = await axios.get(url, { 
+
+      const response = await axios.get(url, {
         timeout: REQUEST_TIMEOUT,
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'Erwin-Bot/1.0'
+          'Owner': 'Erwin',
+          'Name': 'Erwin-Bot/1.0'
         },
         validateStatus: status => status >= 200 && status < 500
       })
-      
+
       lastStatus = response.status
-      
+
       if (response.status === 200 && response.data && response.data.text) {
         return {
           text: cleanVerseText(response.data.text),
@@ -348,12 +349,12 @@ async function fetchVerse(bookCanonical, chapter, verse, apiBase, lang) {
     } catch (error) {
       lastError = error
       console.error(`Erreur avec la version ${versionCode}:`, error.message)
-      
+
       // Si c'est une erreur de timeout ou de réseau, on attend un peu avant de réessayer
       if (error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
         await sleep(1000) // Attendre 1 seconde avant de réessayer
       }
-      
+
       continue
     }
   }
@@ -368,11 +369,11 @@ async function fetchVerse(bookCanonical, chapter, verse, apiBase, lang) {
     lastError: lastError ? lastError.message : 'Inconnue',
     versionsTried: versions.join(', ')
   }
-  
+
   if (lastStatus === 404) {
     err.message = 'VERSET_NON_TROUVE'
   }
-  
+
   throw err
 }
 
@@ -388,7 +389,7 @@ function parseArguments(args) {
       const [, bookRaw, chapterStr, verseStr] = refMatch
       const chapter = parseInt(chapterStr, 10)
       const verse = parseInt(verseStr, 10)
-      
+
       if (chapter > 0 && verse > 0) {
         const bookCanonical = resolveBookName(bookRaw.trim())
         if (bookCanonical) {
@@ -410,7 +411,7 @@ function parseArguments(args) {
   const chapterStr = parts.pop()
 
   if (!verseStr || !/^\d+$/.test(verseStr) || !chapterStr || !/^\d+$/.test(chapterStr)) {
-    return { 
+    return {
       type: 'invalid',
       reason: 'format',
       expected: 'Livre Chapitre:Verset (ex: Jean 3:16)'
@@ -419,7 +420,7 @@ function parseArguments(args) {
 
   const bookRaw = parts.join(' ').trim()
   if (!bookRaw) {
-    return { 
+    return {
       type: 'invalid',
       reason: 'no_book',
       expected: 'Veuillez spécifier un livre de la Bible'
@@ -430,7 +431,7 @@ function parseArguments(args) {
   const verse = parseInt(verseStr, 10)
 
   if (!Number.isInteger(chapter) || chapter <= 0 || !Number.isInteger(verse) || verse <= 0) {
-    return { 
+    return {
       type: 'invalid',
       reason: 'invalid_numbers',
       expected: 'Les numéros de chapitre et de verset doivent être des nombres positifs'
@@ -438,12 +439,12 @@ function parseArguments(args) {
   }
 
   // Essayer différentes variantes du nom du livre
-  const bookCanonical = resolveBookName(bookRaw) || 
-                       resolveBookName(bookRaw.replace(/\s+/g, '')) ||
-                       resolveBookName(bookRaw.replace(/[^\w\s]/g, ''))
+  const bookCanonical = resolveBookName(bookRaw) ||
+    resolveBookName(bookRaw.replace(/\s+/g, '')) ||
+    resolveBookName(bookRaw.replace(/[^\w\s]/g, ''))
 
   if (!bookCanonical) {
-    return { 
+    return {
       type: 'unknownBook',
       book: bookRaw
     }
@@ -461,11 +462,11 @@ function parseArguments(args) {
 // Fonction utilitaire pour obtenir des suggestions de livres
 function getBookSuggestions(input, lang) {
   if (!input) return []
-  
+
   const inputNorm = normalizeKey(input)
   const suggestions = []
   const allBooks = Object.keys(BOOK_OSIS)
-  
+
   // Vérifier d'abord les correspondances exactes
   for (const book of allBooks) {
     const bookNorm = normalizeKey(book)
@@ -473,7 +474,7 @@ function getBookSuggestions(input, lang) {
       return [book] // Retourne directement le livre si correspondance exacte
     }
   }
-  
+
   // Ensuite les correspondances partielles
   for (const book of allBooks) {
     const bookNorm = normalizeKey(book)
@@ -484,7 +485,7 @@ function getBookSuggestions(input, lang) {
       }
     }
   }
-  
+
   // Si pas de suggestions, chercher dans les alias
   if (suggestions.length === 0) {
     for (const [alias, canonical] of BOOK_ALIAS_MAP.entries()) {
@@ -497,7 +498,7 @@ function getBookSuggestions(input, lang) {
       }
     }
   }
-  
+
   return suggestions
 }
 
@@ -539,12 +540,12 @@ const ERROR_MESSAGES = {
 function formatMessage(key, lang, vars = {}) {
   const messages = ERROR_MESSAGES[lang] || ERROR_MESSAGES.en
   let message = messages[key] || key
-  
+
   // Remplacer les variables dans le message
   Object.entries(vars).forEach(([k, v]) => {
     message = message.replace(new RegExp(`{${k}}`, 'g'), v)
   })
-  
+
   return message
 }
 
@@ -552,10 +553,10 @@ export default async function bibleCommand(sock, msg, args) {
   const from = msg.key.remoteJid
   const lang = getLanguagePreference(from) || 'fr' // Français par défaut
   const isGroup = from.endsWith('@g.us')
-  
+
   // Utilisation de l'URL de l'API depuis les variables d'environnement ou la valeur par défaut
   const apiBase = BIBLE_API_BASE.endsWith('/') ? BIBLE_API_BASE.slice(0, -1) : BIBLE_API_BASE
-  
+
   // Vérifier si l'URL de base est correctement configurée
   if (!apiBase) {
     await sock.sendMessage(from, {
@@ -570,7 +571,7 @@ export default async function bibleCommand(sock, msg, args) {
   // Gestion des erreurs de format
   if (parsed.type === 'invalid') {
     let errorMsg
-    
+
     switch (parsed.reason) {
       case 'format':
         errorMsg = formatMessage('INVALID_REFERENCE', lang)
@@ -593,21 +594,21 @@ export default async function bibleCommand(sock, msg, args) {
   if (parsed.type === 'unknownBook') {
     const suggestions = getBookSuggestions(parsed.book, lang)
     let errorMsg = formatMessage('BOOK_NOT_FOUND', lang, { book: parsed.book })
-    
+
     if (suggestions.length > 0) {
       const suggestionText = formatMessage('DID_YOU_MEAN', lang, {
         suggestions: suggestions.join('*, *')
       })
       errorMsg += suggestionText
     }
-    
+
     await sock.sendMessage(from, { text: errorMsg }, { quoted: msg })
     return
   }
 
   // Afficher un message de chargement
-  await sock.sendMessage(from, { 
-    text: formatMessage('LOADING', lang) 
+  await sock.sendMessage(from, {
+    text: formatMessage('LOADING', lang)
   }, { quoted: msg })
 
   try {
@@ -631,7 +632,7 @@ export default async function bibleCommand(sock, msg, args) {
 
     // Récupérer le verset depuis l'API
     const result = await fetchVerse(bookCanonical, chapter, verse, apiBase, lang)
-    
+
     if (!result || !result.text) {
       throw new Error('VERSE_NOT_FOUND')
     }
@@ -641,7 +642,7 @@ export default async function bibleCommand(sock, msg, args) {
 
     // Construire le message de réponse
     const lines = [
-      isRandom 
+      isRandom
         ? formatMessage('RANDOM_VERSE', lang)
         : formatMessage('VERSE_TITLE', lang, { reference: displayReference }),
       '',
@@ -657,15 +658,15 @@ export default async function bibleCommand(sock, msg, args) {
 
     // Envoyer le message avec un délai pour éviter le spam
     await sleep(500)
-    await sock.sendMessage(from, { 
-      text: lines.join('\n') 
+    await sock.sendMessage(from, {
+      text: lines.join('\n')
     }, { quoted: msg })
-    
+
   } catch (error) {
     console.error('Erreur commande Bible:', error)
-    
+
     let errorMessage
-    
+
     // Gestion des erreurs spécifiques
     switch (error.message) {
       case 'LIVRE_NON_TROUVE':
@@ -679,8 +680,8 @@ export default async function bibleCommand(sock, msg, args) {
         break
       case 'VERSET_NON_TROUVE':
       case 'VERSE_NOT_FOUND':
-        errorMessage = formatMessage('VERSE_NOT_FOUND', lang, { 
-          reference: `${bookCanonical} ${chapter}:${verse}` 
+        errorMessage = formatMessage('VERSE_NOT_FOUND', lang, {
+          reference: `${bookCanonical} ${chapter}:${verse}`
         })
         break
       case 'ECONNABORTED':
@@ -695,10 +696,10 @@ export default async function bibleCommand(sock, msg, args) {
         console.error('Détails de l\'erreur:', error.details || 'Aucun détail supplémentaire')
         errorMessage = formatMessage('API_ERROR', lang)
     }
-    
+
     // Envoyer le message d'erreur
-    await sock.sendMessage(from, { 
-      text: errorMessage 
+    await sock.sendMessage(from, {
+      text: errorMessage
     }, { quoted: msg })
   }
 }

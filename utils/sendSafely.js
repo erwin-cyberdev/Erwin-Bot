@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { isOptedIn } from './consent.js'
 
-const token = process.env.WABA_ACCESS_TOKEN
+const token = 'WABA_ACCESS_TOKEN_PLACEHOLDER'
 
 export async function sendSafely(jid, payload) {
   if (!token) throw new Error('WABA_ACCESS_TOKEN manquant')

@@ -6,7 +6,7 @@ import yts from 'yt-search'
 import ytdlp from 'yt-dlp-exec'
 
 const TEMP_DIR = path.resolve('./tmp/song')
-const MAX_AUDIO_BYTES = parseInt(process.env.MAX_AUDIO_BYTES || String(30 * 1024 * 1024), 10) // 30 MB par défaut
+const MAX_AUDIO_BYTES = 30 * 1024 * 1024 // 30 MB par défaut
 
 async function ensureTempDir() {
   try {

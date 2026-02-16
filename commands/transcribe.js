@@ -77,8 +77,8 @@ Réponds à un message vocal avec \`.transcribe\`
         const response = await fetch(WHISPER_API_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                'HTTP-Referer': process.env.RENDER_URL || 'https://github.com/erwin-cyberdev/erwin-bot',
+                'Authorization': `Bearer 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`,
+                'HTTP-Referer': 'https://erwin-bot.onrender.com',
                 'X-Title': 'Erwin-Bot'
             },
             body: formData,

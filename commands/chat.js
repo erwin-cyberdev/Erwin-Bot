@@ -31,11 +31,7 @@ export default async function chatCommand(sock, msg, args = []) {
     }
 
     // Check API key
-    if (!process.env.OPENROUTER_API_KEY) {
-        return sock.sendMessage(from, {
-            text: '⚠️ OPENROUTER_API_KEY manquante dans .env'
-        }, { quoted: msg })
-    }
+    // API Key is hardcoded in openRouter.js
 
     await sock.sendMessage(from, { text: '💭 Je réfléchis...' }, { quoted: msg })
 

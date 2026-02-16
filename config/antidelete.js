@@ -45,11 +45,10 @@ const logger = createLogger({
     ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new transports.Console({
-        format: format.combine(format.colorize(), format.simple())
-    }));
-}
+// Always enable console logging for robustness unless explicitly quieted
+logger.add(new transports.Console({
+    format: format.combine(format.colorize(), format.simple())
+}));
 
 /* ================= UTILS ================= */
 
@@ -62,14 +61,14 @@ export function logMessage(message, type = 'info') {
             messageId: message.key?.id,
             from: message.key?.remoteJid,
             sender: message.key?.participant || message.key?.remoteJid,
-            content: message.message?.conversation || 
-                    message.message?.extendedTextMessage?.text ||
-                    (message.message?.imageMessage ? '[Image]' : '') ||
-                    (message.message?.videoMessage ? '[Vidéo]' : '') ||
-                    (message.message?.audioMessage ? '[Audio]' : '') ||
-                    (message.message?.stickerMessage ? '[Autocollant]' : '') ||
-                    (message.message?.documentMessage ? '[Document]' : '') ||
-                    '[Type de message non supporté]',
+            content: message.message?.conversation ||
+                message.message?.extendedTextMessage?.text ||
+                (message.message?.imageMessage ? '[Image]' : '') ||
+                (message.message?.videoMessage ? '[Vidéo]' : '') ||
+                (message.message?.audioMessage ? '[Audio]' : '') ||
+                (message.message?.stickerMessage ? '[Autocollant]' : '') ||
+                (message.message?.documentMessage ? '[Document]' : '') ||
+                '[Type de message non supporté]',
             isGroup: message.key?.remoteJid?.endsWith('@g.us') || false
         };
 
@@ -181,7 +180,7 @@ export async function handleMessageRevocation(sock, msg) {
         // Vérifier si le message supprimé provient d'un groupe ou d'une discussion privée
         const isGroup = original.chat.endsWith('@g.us');
         const targetChat = isGroup ? original.chat : owner;
-        
+
         let text = `🛑 *MESSAGE SUPPRIMÉ*\n\n` +
             `👤 *Auteur:* ${original.sender}\n` +
             `💬 *Conversation:* ${isGroup ? 'Groupe' : 'Discussion privée'}\n` +
@@ -208,11 +207,11 @@ export async function handleMessageRevocation(sock, msg) {
 
         // Si c'est un groupe, envoyer une copie au propriétaire du bot
         if (isGroup) {
-            await sock.sendMessage(owner, { 
+            await sock.sendMessage(owner, {
                 text: `📨 *Message supprimé dans un groupe*\n` +
-                      `👥 *Groupe:* ${original.chat}\n` +
-                      `👤 *Auteur:* ${original.sender}\n` +
-                      `💬 *Message:* ${original.content || '[Média]'}`
+                    `👥 *Groupe:* ${original.chat}\n` +
+                    `👤 *Auteur:* ${original.sender}\n` +
+                    `💬 *Message:* ${original.content || '[Média]'}`
             });
         }
 

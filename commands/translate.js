@@ -27,14 +27,6 @@ export default async function (sock, msg, args) {
     )
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    return await sock.sendMessage(
-      from,
-      { text: '⚠️ OPENROUTER_API_KEY manquante dans .env' },
-      { quoted: msg }
-    )
-  }
-
   const targetLang = args[0].toLowerCase()
   const textToTranslate = args.slice(1).join(" ")
 
