@@ -46,15 +46,36 @@ let lastQR = null
 
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
 app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l\'endpoint health
+
+const RENDER_URL = 'https://erwin-bot.onrender.com' // Définition globale
+const BOT_NAME = 'Erwin-Bot'
+
 app.get('/qr', (req, res) => {
   if (lastQR) {
-    res.setHeader('Content-Type', 'image/png')
-    qrcode.toBuffer(lastQR, (err, buffer) => {
-      if (err) res.status(500).send('Error generating QR')
-      else res.send(buffer)
-    })
+    res.setHeader('Content-Type', 'text/html')
+    const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(lastQR)}`
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Erwin-Bot QR Code</title>
+          <style>
+            body { background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+            img { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+            h1 { margin-bottom: 20px; color: #00ffcc; }
+            p { margin-top: 20px; color: #888; }
+          </style>
+        </head>
+        <body>
+          <h1>📦 Erwin-Bot Connection</h1>
+          <img src="${qrImage}" alt="QR Code">
+          <p>Scannez ce code pour connecter le bot</p>
+          <script>setTimeout(() => location.reload(), 20000);</script>
+        </body>
+      </html>
+    `)
   } else {
-    res.send('QR Code non généré ou déjà scanné.')
+    res.send('QR Code non généré ou déjà scanné. <a href="/">Retour</a>')
   }
 })
 
@@ -198,6 +219,19 @@ async function start() {
   }
 
   const commands = await loadCommands()
+
+  // Logic for Render Session Persistence
+  if (!fs.existsSync(path.join(authDir, 'creds.json')) && process.env.SESSION_DATA) {
+    try {
+      console.log(chalk.blue('📁 Restoring session from SESSION_DATA...'))
+      const decrypted = Buffer.from(process.env.SESSION_DATA, 'base64').toString('utf-8')
+      fs.writeFileSync(path.join(authDir, 'creds.json'), decrypted)
+      console.log(chalk.green('✅ Session restored successfully.'))
+    } catch (e) {
+      console.error('❌ Failed to restore session:', e.message)
+    }
+  }
+
   const { state, saveCreds } = await useMultiFileAuthState(authDir)
   const logger = P({ level: 'info' })
   let reconnectAttempts = 0
@@ -352,6 +386,9 @@ async function start() {
         const sender = msg.key.participant || msg.key.remoteJid
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || ''
 
+        // Capturer le message pour l'anti-delete
+        import('../handlers/antiDeleteHandler.js').then(m => m.captureMessageForAntiDelete(sock, msg)).catch(() => { })
+
         // Gestion des auto-réactions (non-bloquant)
         if (from.endsWith('@g.us')) {
           handleAutoReact(sock, msg, from, text).catch(() => { })
@@ -457,10 +494,9 @@ async function start() {
                 .replace(/{group}/g, groupName)
 
               messagePromises.push(
-                secureMessageSend(sock, id, {
-                  text: `👋 ${text}`,
-                  mentions: [participant],
-                  delay: 100
+                sock.sendMessage(id, {
+                  text: text,
+                  mentions: [participant]
                 }).catch(console.error)
               )
             }
@@ -473,10 +509,9 @@ async function start() {
                 .replace(/{group}/g, groupName)
 
               messagePromises.push(
-                secureMessageSend(sock, id, {
-                  text: `👋 ${text}`,
-                  mentions: [participant],
-                  delay: 100
+                sock.sendMessage(id, {
+                  text: text,
+                  mentions: [participant]
                 }).catch(console.error)
               )
             }

@@ -34,7 +34,10 @@ let isSaving = false
 function loadSpamData() {
   try {
     if (fsSync.existsSync(SPAM_DB)) {
-      spamData = JSON.parse(fsSync.readFileSync(SPAM_DB, 'utf-8'))
+      const content = fsSync.readFileSync(SPAM_DB, 'utf-8')
+      if (content && content.trim()) {
+        spamData = JSON.parse(content)
+      }
     }
   } catch (err) {
     console.error('Erreur chargement spam data:', err)
@@ -44,7 +47,7 @@ function loadSpamData() {
 // Sauvegarder données (async avec debounce)
 async function saveSpamDataAsync() {
   if (isSaving) return
-  
+
   try {
     isSaving = true
     const dir = path.dirname(SPAM_DB)
@@ -78,17 +81,17 @@ export function isBlacklisted(userId) {
     return false
   }
   if (!spamData.blacklist[userId]) return false
-  
+
   const blacklistEntry = spamData.blacklist[userId]
   const now = Date.now()
-  
+
   // Vérifier expiration
   if (now > blacklistEntry.until) {
     delete spamData.blacklist[userId]
     saveSpamData()
     return false
   }
-  
+
   return true
 }
 
@@ -101,7 +104,7 @@ export function addToBlacklist(userId, reason, duration = CONFIG.blacklistDurati
     since: Date.now(),
     until: Date.now() + duration
   }
-  
+
   console.warn(`🚫 User blacklisté: ${userId} - Raison: ${reason}`)
   saveSpamData()
 }
@@ -120,39 +123,39 @@ export function removeFromBlacklist(userId) {
 export function checkCommandSpam(userId, command) {
   const now = Date.now()
   const oneMinuteAgo = now - 60000
-  
+
   // Initialiser si nécessaire
   if (!spamData.userCommands[userId]) {
     spamData.userCommands[userId] = []
   }
-  
+
   const userHistory = spamData.userCommands[userId]
-  
+
   // Nettoyer vieilles entrées
   spamData.userCommands[userId] = userHistory.filter(entry => entry.timestamp > oneMinuteAgo)
-  
+
   // Compter commandes dans la dernière minute
   const recentCommands = spamData.userCommands[userId]
-  
+
   if (recentCommands.length >= CONFIG.maxCommandsPerMinute) {
     addWarning(userId, 'Too many commands per minute')
     return false
   }
-  
+
   // Vérifier répétition même commande
   const sameCommandCount = recentCommands.filter(e => e.command === command).length
-  
+
   if (sameCommandCount >= CONFIG.maxSameCommandRepeat) {
     addWarning(userId, `Repeating command: ${command}`)
     return false
   }
-  
+
   // Ajouter commande
   spamData.userCommands[userId].push({
     command,
     timestamp: now
   })
-  
+
   return true
 }
 
@@ -163,21 +166,21 @@ function addWarning(userId, reason) {
   if (!spamData.userWarnings[userId]) {
     spamData.userWarnings[userId] = []
   }
-  
+
   spamData.userWarnings[userId].push({
     reason,
     timestamp: Date.now()
   })
-  
+
   const warningCount = spamData.userWarnings[userId].length
-  
+
   console.warn(`⚠️ Avertissement ${warningCount}/${CONFIG.warningThreshold} pour ${userId}: ${reason}`)
-  
+
   // Blacklist si trop d'avertissements
   if (warningCount >= CONFIG.warningThreshold) {
     addToBlacklist(userId, `${warningCount} warnings - Spam detected`)
   }
-  
+
   saveSpamData()
 }
 
@@ -191,30 +194,30 @@ export function detectSuspiciousPattern(userId, action) {
       score: 0
     }
   }
-  
+
   const pattern = spamData.suspiciousPatterns[userId]
   pattern.actions.push({
     action,
     timestamp: Date.now()
   })
-  
+
   // Nettoyer vieilles actions (>10 min)
   const tenMinutesAgo = Date.now() - 600000
   pattern.actions = pattern.actions.filter(a => a.timestamp > tenMinutesAgo)
-  
+
   // Calculer score de suspicion
   const recentActions = pattern.actions.length
-  
+
   // Pattern suspect: beaucoup d'actions en peu de temps
   if (recentActions > CONFIG.suspiciousPatternThreshold) {
     pattern.score++
-    
+
     if (pattern.score >= 3) {
       addWarning(userId, 'Suspicious activity pattern detected')
       pattern.score = 0 // Reset
     }
   }
-  
+
   saveSpamData()
 }
 
@@ -224,27 +227,27 @@ export function detectSuspiciousPattern(userId, action) {
 export function checkMediaSpam(userId, mediaType) {
   const now = Date.now()
   const oneHourAgo = now - 3600000
-  
+
   if (!spamData.userCommands[userId]) {
     spamData.userCommands[userId] = []
   }
-  
+
   // Compter médias envoyés dans l'heure
-  const mediaCount = spamData.userCommands[userId].filter(entry => 
+  const mediaCount = spamData.userCommands[userId].filter(entry =>
     entry.timestamp > oneHourAgo && entry.mediaType
   ).length
-  
+
   if (mediaCount >= CONFIG.maxMediaPerHour) {
     addWarning(userId, 'Too many media requests per hour')
     return false
   }
-  
+
   // Ajouter l'entrée média
   spamData.userCommands[userId].push({
     mediaType,
     timestamp: now
   })
-  
+
   return true
 }
 
@@ -277,41 +280,41 @@ export function getSpamStats() {
 export function cleanupOldData() {
   const now = Date.now()
   const oneWeekAgo = now - 7 * 24 * 3600000
-  
+
   // Nettoyer warnings > 1 semaine
   for (const userId in spamData.userWarnings) {
     spamData.userWarnings[userId] = spamData.userWarnings[userId].filter(
       w => w.timestamp > oneWeekAgo
     )
-    
+
     if (spamData.userWarnings[userId].length === 0) {
       delete spamData.userWarnings[userId]
     }
   }
-  
+
   // Nettoyer commandes > 1 jour
   const oneDayAgo = now - 24 * 3600000
   for (const userId in spamData.userCommands) {
     spamData.userCommands[userId] = spamData.userCommands[userId].filter(
       c => c.timestamp > oneDayAgo
     )
-    
+
     if (spamData.userCommands[userId].length === 0) {
       delete spamData.userCommands[userId]
     }
   }
-  
+
   // Nettoyer patterns > 1 jour
   for (const userId in spamData.suspiciousPatterns) {
     spamData.suspiciousPatterns[userId].actions = spamData.suspiciousPatterns[userId].actions.filter(
       a => a.timestamp > oneDayAgo
     )
-    
+
     if (spamData.suspiciousPatterns[userId].actions.length === 0) {
       delete spamData.suspiciousPatterns[userId]
     }
   }
-  
+
   saveSpamData()
   console.log('🧹 Nettoyage des données anti-spam effectué')
 }

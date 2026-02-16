@@ -73,7 +73,7 @@ Réponds à un message vocal avec \`.transcribe\`
         const response = await fetch(WHISPER_API_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer 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`,
+                'Authorization': `Bearer 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`,
                 'HTTP-Referer': 'https://erwin-bot.onrender.com',
                 'X-Title': 'Erwin-Bot'
             },

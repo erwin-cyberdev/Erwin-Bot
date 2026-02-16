@@ -1,14 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { chatCompletion, AI_MODELS } from '../utils/openRouter.js'
 
-// Clé API Gemini fournie par l'utilisateur
+// Clé API Gemini fallback
 const GEMINI_API_KEY = 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
 
-if (!GEMINI_API_KEY) {
-    console.warn('⚠️ GEMINI_API_KEY manquant dans le fichier .env ! La commande .ai ne fonctionnera pas.')
-}
-
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
 
 export default async function aiCommand(sock, msg, args) {
     const from = msg.key.remoteJid
@@ -19,21 +16,31 @@ export default async function aiCommand(sock, msg, args) {
         return
     }
 
-    await sock.sendMessage(from, { text: '🧠 Gemini réfléchit...' }, { quoted: msg })
+    await sock.sendMessage(from, { text: '🤖 Erwin-Bot réfléchit...' }, { quoted: msg })
 
     try {
-        const result = await model.generateContent(prompt)
-        const response = await result.response
-        const text = response.text()
+        // 1. Essayer OpenRouter (Gemini via OpenRouter)
+        try {
+            const response = await chatCompletion(AI_MODELS.GEMINI, [{ role: 'user', content: prompt }])
+            if (response) {
+                return await sock.sendMessage(from, { text: `🤖 *Erwin-AI :*\n\n${response}` }, { quoted: msg })
+            }
+        } catch (orError) {
+            console.error('Erreur OpenRouter, tentative fallback Gemini SDK:', orError.message)
+        }
 
-        if (!text) throw new Error('Réponse vide de Gemini')
+        // 2. Fallback sur Gemini SDK direct
+        const result = await geminiModel.generateContent(prompt)
+        const responseText = result.response.text()
 
-        await sock.sendMessage(from, { text: `✨ *Réponse Gemini :*\n\n${text}` }, { quoted: msg })
+        if (!responseText) throw new Error('Réponse vide de Gemini SDK')
+
+        await sock.sendMessage(from, { text: `✨ *Erwin-AI (Fallback) :*\n\n${responseText}` }, { quoted: msg })
 
     } catch (error) {
-        console.error('Erreur Gemini SDK:', error)
+        console.error('Erreur AI totale:', error)
         await sock.sendMessage(from, {
-            text: '❌ Une erreur est survenue avec Gemini. Vérifiez la clé API ou réessayez plus tard.'
+            text: '❌ Désolé, le système IA est temporairement indisponible. Réessaye plus tard.'
         }, { quoted: msg })
     }
 }

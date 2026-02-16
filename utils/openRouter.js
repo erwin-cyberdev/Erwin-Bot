@@ -25,8 +25,8 @@ export const AI_MODELS = {
  * @param {Object} options - Options supplémentaires (temperature, max_tokens...)
  */
 export async function chatCompletion(model, messages, options = {}) {
-    const apiKey = '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' // Note: This value was not in .env, I am using a placeholder but user should replace if they have it. Wait, Gemini key as fallback? No.
-    if (!apiKey) throw new Error('OPENROUTER_API_KEY manquante dans .env')
+    const apiKey = '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'
+    if (!apiKey) throw new Error('OPENROUTER_API_KEY manquante')
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)

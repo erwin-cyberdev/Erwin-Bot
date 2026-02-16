@@ -66,7 +66,6 @@ export default async function (sock, msg, args) {
 
   // Toggle le paramètre
   const newValue = toggleGroupSetting(from, 'antilink')
-  ensureListener(sock)
 
   if (newValue) {
     await sock.sendMessage(from, {

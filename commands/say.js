@@ -57,7 +57,7 @@ export default async function (sock, msg, args) {
     if (useAI) {
       // Utiliser l'IA pour générer du contenu via OpenRouter
       // API Key is hardcoded in openRouter.js
-      const apiKey = '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'
+      const apiKey = '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'
       if (!apiKey || apiKey.includes('PLACEHOLDER')) {
         return sock.sendMessage(from, {
           text: '❌ OPENROUTER_API_KEY non configurée dans le code.'
