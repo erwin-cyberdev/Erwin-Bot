@@ -13,7 +13,6 @@ import https from 'https'
 import chalk from 'chalk'
 import figlet from 'figlet'
 import P from 'pino'
-import readline from 'readline'
 import express from 'express'
 import axios from 'axios'
 import { pathToFileURL } from 'url'
@@ -35,42 +34,15 @@ import { handleAutoReact } from './utils/autoReact.js'
 const __dirname = process.cwd()
 const authDir = path.join(__dirname, 'auth_info')
 const cmdDir = path.join(__dirname, 'commands')
-const LOGIN_METHOD = (process.env.LOGIN_METHOD || 'ask').toLowerCase()
-const loginModeFile = path.join(authDir, '.login_mode')
-function readSavedLoginMode() {
-  try {
-    if (fs.existsSync(loginModeFile)) {
-      const value = fs.readFileSync(loginModeFile, 'utf8').trim().toLowerCase()
-      if (value === 'qr' || value === 'code') return value
-    }
-  } catch { }
-  return null
-}
-function persistLoginMode(mode) {
-  try {
-    if (mode === 'qr' || mode === 'code') {
-      if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
-      fs.writeFileSync(loginModeFile, mode)
-    }
-  } catch { }
-}
-let chosenLoginMode = readSavedLoginMode() || LOGIN_METHOD
 
 // --- helpers ---
 const sleep = (ms) => new Promise(res => setTimeout(res, ms))
 const rand = (n) => Math.floor(Math.random() * n)
-function promptInput(q) {
-  return new Promise(resolve => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    rl.question(q, ans => { rl.close(); resolve(ans) })
-  })
-}
 
 // --- Serveur Web & Keep-Alive ---
 const app = express()
 const PORT = process.env.PORT || 3000
 let lastQR = null
-let lastPairCode = null
 
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
 app.get('/qr', (req, res) => {
@@ -84,7 +56,6 @@ app.get('/qr', (req, res) => {
     res.send('QR Code non généré ou déjà scanné.')
   }
 })
-app.get('/pair', (req, res) => res.send(lastPairCode ? `Code de jumelage : ${lastPairCode}` : 'Code non généré.'))
 
 app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
 
@@ -135,24 +106,6 @@ async function isAdminCached(sock, groupId, userId) {
   } catch (e) {
     console.error('Erreur vérification admin:', e)
     return false
-  }
-}
-async function chooseLoginMode() {
-  console.log(chalk.cyan('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'))
-  console.log(chalk.yellow('🔐 Méthode de connexion WhatsApp'))
-  console.log(chalk.cyan('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'))
-  console.log(chalk.gray('1. qr   - Connexion par QR Code (rapide)'))
-  console.log(chalk.gray('2. code - Connexion par code à 8 chiffres'))
-  console.log(chalk.cyan('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'))
-
-  const ans = (await promptInput('Choisis ta méthode (qr/code) [qr]: ')).trim().toLowerCase()
-
-  if (ans === 'code') {
-    console.log(chalk.green('✅ Méthode sélectionnée: CODE DE LIAISON'))
-    return 'code'
-  } else {
-    console.log(chalk.green('✅ Méthode sélectionnée: QR CODE'))
-    return 'qr'
   }
 }
 
@@ -253,21 +206,9 @@ async function start() {
     }
 
     try {
-      // Decide login mode BEFORE creating socket to avoid missing early QR events
-      let loginMode = chosenLoginMode
       const isRegistered = !!state?.creds?.registered
       if (!isRegistered) {
-        // Mode QR forcé - Bypass prompt
-        console.log(chalk.cyan('📱 Mode QR Code forcé par défaut'))
-        chosenLoginMode = 'qr'
-      }
-
-      if (chosenLoginMode !== loginMode) {
-        chosenLoginMode = loginMode
-      }
-
-      if (chosenLoginMode === 'qr' || chosenLoginMode === 'code') {
-        persistLoginMode(chosenLoginMode)
+        console.log(chalk.cyan('📱 Mode QR Code activé par défaut'))
       }
 
       const sock = makeWASocket({
@@ -282,11 +223,9 @@ async function start() {
         markOnlineOnConnect: true,
         syncFullHistory: false,
         getMessage: async (key) => {
-          // Optimisation: récupération rapide des messages
           return { conversation: '' }
         },
         shouldIgnoreJid: (jid) => {
-          // Ignorer les statuts pour réduire la charge
           return jid === 'status@broadcast'
         }
       })
@@ -306,7 +245,7 @@ async function start() {
         const { connection, lastDisconnect, qr } = upd
 
         // Gestion améliorée du QR code
-        if (qr && loginMode !== 'code') {
+        if (qr) {
           lastQR = qr
           qrCount++
 
@@ -341,7 +280,7 @@ async function start() {
                 console.log(chalk.red('\n❌ Nombre maximum de tentatives atteint.'))
                 console.log(chalk.yellow('💡 Conseils:'))
                 console.log(chalk.gray('   • Vérifie ta connexion internet'))
-                console.log(chalk.gray('   • Relance le bot et essaie avec le code de liaison'))
+                console.log(chalk.gray('   • Relance le bot'))
                 console.log(chalk.gray('   • Assure-toi que WhatsApp fonctionne sur ton téléphone\n'))
               }
             }
@@ -377,39 +316,21 @@ async function start() {
             fs.mkdirSync(authDir, { recursive: true })
             reconnectAttempts = 0
             creating = false
-            chosenLoginMode = readSavedLoginMode() || LOGIN_METHOD
             await start()
             return
           }
           reconnectAttempts++
           creating = false
-          chosenLoginMode = readSavedLoginMode() || chosenLoginMode || LOGIN_METHOD
           await createSocket()
         }
       })
 
-      // --- Pairing code support ---
-      if (!state.creds.registered && loginMode === 'code') {
-        const phoneNumber = await promptInput(chalk.cyan('📱 Entre ton numéro (ex: 237xxxxxx) : '))
-        setTimeout(async () => {
-          try {
-            const code = await sock.requestPairingCode(phoneNumber.replace(/[+-\s]/g, ''))
-            lastPairCode = code
-            console.log(chalk.white.bold('\n🔑 TON CODE DE JUMELAGE : ') + chalk.yellow.bold(code))
-            console.log(chalk.gray('🔗 Utilise ce code sur ton téléphone (Appareils liés > Lier avec le numéro de téléphone)\n'))
-          } catch (e) {
-            console.error('❌ Erreur génération code pairing:', e.message)
-          }
-        }, 3000)
-      } else if (!state.creds.registered) {
-        console.log('📱 Connexion par QR code (pairing code désactivé)')
-      }
+      // Ensure creation status is reset
+      creating = false
+      reconnectAttempts = 0
 
       // --- Gestion optimisée des messages ---
       console.log('✅ Bot connecté et en attente de messages...')
-
-      // Afficher toutes les commandes chargées
-      console.log('📋 Commandes chargées:', [...commands.keys()].join(', '))
 
       sock.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages?.[0]
@@ -459,29 +380,18 @@ async function start() {
 
         // Vérifier si le message commence par le préfixe
         const prefix = getPrefix()
-        console.log('🔍 Vérification du préfixe pour:', text, '(préfixe attendu:', prefix + ')')
-        if (!text.startsWith(prefix)) {
-          console.log(`❌ Le message ne commence pas par le préfixe ${prefix}`)
-          return
-        }
+        if (!text.startsWith(prefix)) return
 
         // Extraire la commande et les arguments
         const [cmdRaw, ...args] = text.slice(prefix.length).trim().split(/\s+/)
         const cmd = cmdRaw.toLowerCase()
 
         // Vérifier si la commande existe
-        console.log(`🔎 Recherche de la commande: ${cmd}`)
         const commandFunc = commands.get(cmd)
-        if (!commandFunc) {
-          console.log(`❌ Commande inconnue: ${cmd}`)
-          // Ignorer silencieusement les commandes inconnues
-          return
-        }
-        console.log(`✅ Commande trouvée: ${cmd}`)
+        if (!commandFunc) return
 
         // Vérifier si le mode admin-only est activé
         if (isAdminOnly() && !(isAdmin(sender) || isOwner(sender))) {
-          // Ne rien faire, ignorer simplement la commande
           return;
         }
 
@@ -506,7 +416,7 @@ async function start() {
         }
       })
 
-      // --- antidelete : écoute des messages supprimés ---
+      // --- antidelete ---
       sock.ev.on('messages.delete', async (deletion) => {
         try {
           const { keys } = deletion
@@ -520,34 +430,20 @@ async function start() {
         }
       })
 
-      // Gestion des erreurs non capturées
-      process.on('unhandledRejection', (reason, promise) => {
-        console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-      });
-
-      process.on('uncaughtException', (error) => {
-        console.error('Uncaught Exception:', error);
-      });
-
       // --- Gestion optimisée des événements de groupe ---
       sock.ev.on('group-participants.update', async (update) => {
         try {
           const { id, participants, action } = update
           if (!id || !participants?.length) return
 
-          // Récupération en parallèle des paramètres et métadonnées
           const [settings, groupMetadata] = await Promise.all([
             getGroupSettings(id),
             getGroupMetadataCached(sock, id)
           ])
 
           const groupName = groupMetadata?.subject || 'ce groupe'
-          const now = Date.now()
-
-          // Traitement des arrivées et départs en parallèle
           const messagePromises = []
 
-          // Gestion des messages de bienvenue
           if (action === 'add' && settings.welcome) {
             for (const participant of participants) {
               const text = settings.welcome
@@ -558,13 +454,12 @@ async function start() {
                 secureMessageSend(sock, id, {
                   text: `👋 ${text}`,
                   mentions: [participant],
-                  delay: 100 // Petit délai entre les messages
+                  delay: 100
                 }).catch(console.error)
               )
             }
           }
 
-          // Gestion des messages d'au revoir
           if (action === 'remove' && settings.goodbye) {
             for (const participant of participants) {
               const text = settings.goodbye
@@ -575,19 +470,14 @@ async function start() {
                 secureMessageSend(sock, id, {
                   text: `👋 ${text}`,
                   mentions: [participant],
-                  delay: 100 // Petit délai entre les messages
+                  delay: 100
                 }).catch(console.error)
               )
             }
           }
 
-          // Antibot
           if (action === 'add' && settings.antibot) {
-            const groupMetadata = await getGroupMetadataCached(sock, id)
-
             for (const participant of participants) {
-              // Vérifier si c'est un bot (JID commence par un préfixe spécifique)
-              // Baileys et autres bots ont souvent des JIDs qui ne sont pas des numéros purs
               const isLikelyBot = !participant.startsWith('1') && !participant.startsWith('2') &&
                 !participant.startsWith('3') && !participant.startsWith('4') &&
                 !participant.startsWith('5') && !participant.startsWith('6') &&
@@ -608,7 +498,6 @@ async function start() {
             }
           }
 
-          // Exécution en parallèle de tous les envois de messages
           if (messagePromises.length > 0) {
             await Promise.all(messagePromises)
           }
@@ -618,8 +507,6 @@ async function start() {
         }
       })
 
-      creating = false
-      reconnectAttempts = 0
       return sock
     } catch (err) {
       creating = false
