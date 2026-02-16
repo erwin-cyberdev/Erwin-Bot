@@ -1,11 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { chatCompletion, AI_MODELS } from '../utils/groq.js'
-
-// Clé API Gemini fallback
-const GEMINI_API_KEY = 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
 export default async function aiCommand(sock, msg, args) {
     const from = msg.key.remoteJid
@@ -19,26 +12,14 @@ export default async function aiCommand(sock, msg, args) {
     await sock.sendMessage(from, { text: '🤖 Erwin-Bot (Groq) réfléchit...' }, { quoted: msg })
 
     try {
-        // 1. Essayer Groq (Llama 3.3)
-        try {
-            const response = await chatCompletion(AI_MODELS.LLAMA_3_3, [{ role: 'user', content: prompt }])
-            if (response) {
-                return await sock.sendMessage(from, { text: `🤖 *Erwin-AI :*\n\n${response}` }, { quoted: msg })
-            }
-        } catch (orError) {
-            console.error('Erreur Groq, tentative fallback Gemini SDK:', orError.message)
+        const response = await chatCompletion(AI_MODELS.LLAMA_3_3, [{ role: 'user', content: prompt }])
+        if (response) {
+            return await sock.sendMessage(from, { text: `🤖 *Erwin-AI :*\n\n${response}` }, { quoted: msg })
+        } else {
+            throw new Error('Réponse vide de Groq')
         }
-
-        // 2. Fallback sur Gemini SDK direct
-        const result = await geminiModel.generateContent(prompt)
-        const responseText = result.response.text()
-
-        if (!responseText) throw new Error('Réponse vide de Gemini SDK')
-
-        await sock.sendMessage(from, { text: `✨ *Erwin-AI (Fallback Gemini) :*\n\n${responseText}` }, { quoted: msg })
-
     } catch (error) {
-        console.error('Erreur AI totale:', error)
+        console.error('Erreur AI Groq:', error)
         await sock.sendMessage(from, {
             text: '❌ Désolé, le système IA est temporairement indisponible. Réessaye plus tard.'
         }, { quoted: msg })

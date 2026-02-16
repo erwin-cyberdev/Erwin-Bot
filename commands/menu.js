@@ -11,7 +11,7 @@ const FALLBACK_DESCRIPTION = {
 const COMMAND_METADATA = {
   add: { category: 'admin', descriptionFr: 'Ajouter un membre au groupe via son numéro.', descriptionEn: 'Add a member to the group using their number.' },
   advice: { category: 'user', descriptionFr: 'Recevoir un conseil aléatoire.', descriptionEn: 'Receive a random piece of advice.' },
-  ai: { category: 'user', descriptionFr: 'Conversation IA avec Gemini 2.0 Flash.', descriptionEn: 'AI conversation with Gemini 2.0 Flash.' },
+  ai: { category: 'user', descriptionFr: 'Conversation IA avec Groq Llama 3.3.', descriptionEn: 'AI conversation with Groq Llama 3.3.' },
   chat: { category: 'user', descriptionFr: 'Conversation IA avec mémoire contextuelle.', descriptionEn: 'AI conversation with contextual memory.' },
   session: { category: 'owner', descriptionFr: 'Générer la clé de session pour Render.', descriptionEn: 'Generate the session key for Render.' },
   mistral: { category: 'user', descriptionFr: 'Envoyer un message à Mistral via OpenRouter.', descriptionEn: 'Send a message to Mistral via OpenRouter.' },
@@ -85,7 +85,7 @@ const COMMAND_METADATA = {
   unban: { category: 'owner', descriptionFr: 'Réhabiliter un utilisateur banni.', descriptionEn: 'Reinstate a banned user.' },
   unmute: { category: 'admin', descriptionFr: 'Réactiver un membre mis en sourdine.', descriptionEn: 'Unmute a member.' },
   unwarn: { category: 'admin', descriptionFr: 'Retirer un avertissement d’un membre.', descriptionEn: 'Remove a warning from a member.' },
-  vision: { category: 'user', descriptionFr: 'Analyser une image avec Gemini Vision.', descriptionEn: 'Analyze an image with Gemini Vision.' },
+  vision: { category: 'user', descriptionFr: 'Analyser une image avec Groq Vision.', descriptionEn: 'Analyze an image with Groq Vision.' },
   vote: { category: 'user', descriptionFr: 'Créer un vote rapide dans le groupe.', descriptionEn: 'Create a quick group vote.' },
   wallpaper: { category: 'user', descriptionFr: 'Trouver un fond d’écran HD.', descriptionEn: 'Find an HD wallpaper.' },
   waifu: { category: 'user', descriptionFr: 'Obtenir une image aléatoire de waifu ou husbando.', descriptionEn: 'Get a random waifu or husbando image.' },

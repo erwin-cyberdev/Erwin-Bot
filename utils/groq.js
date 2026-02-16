@@ -7,6 +7,7 @@ export const AI_MODELS = {
     LLAMA_3_3: 'llama-3.3-70b-versatile',
     MIXTRAL: 'mixtral-8x7b-32768',
     LLAMA_3_1_8B: 'llama-3.1-8b-instant',
+    VISION_LLAMA_11B: 'llama-3.2-11b-vision-preview',
     DEFAULT: 'llama-3.3-70b-versatile'
 }
 

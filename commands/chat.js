@@ -1,6 +1,6 @@
 /**
  * commands/chat.js
- * AI conversation with memory (using OpenRouter)
+ * AI conversation with memory (using Groq)
  */
 import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 import { getConversation, addMessage, clearConversation } from '../utils/chatMemory.js'
@@ -31,7 +31,7 @@ export default async function chatCommand(sock, msg, args = []) {
     }
 
     // Check API key
-    // API Key is hardcoded in openRouter.js
+    // API Key is hardcoded in groq.js
 
     await sock.sendMessage(from, { text: '💭 Je réfléchis...' }, { quoted: msg })
 
