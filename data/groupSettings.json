@@ -1670,5 +1670,107 @@
       "bots": false
     },
     "language": "fr"
+  },
+  "120363405525787720@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363423626058627@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363422628665051@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363422950087093@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363406398129099@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363422414539491@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
   }
 }

@@ -46,7 +46,7 @@ function normalizeJid(jid) {
   return beforeAt.split(':')[0]
 }
 
-const extraOwners = ['78529702158422', '237679137132', '237674151474', '23769137132', '113189836562603']
+const extraOwners = ['237679137132', '120363405058490717']
 
 function getOwners() {
   return extraOwners

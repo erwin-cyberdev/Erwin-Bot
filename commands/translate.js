@@ -1,13 +1,10 @@
-/**
- * commands/translate.js - Refactored to use OpenRouter
- */
-import { chatCompletion, AI_MODELS } from '../utils/openRouter.js'
+import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 
 async function translateText(text, targetLang) {
   const prompt = `Traduire le texte suivant en ${targetLang}. Ne donne que la traduction, sans explication :\n\n"${text}"`
 
   const response = await chatCompletion(
-    AI_MODELS.GEMINI,
+    AI_MODELS.LLAMA_3_1_8B,
     [{ role: 'user', content: prompt }]
   )
 

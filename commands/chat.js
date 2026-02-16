@@ -2,7 +2,7 @@
  * commands/chat.js
  * AI conversation with memory (using OpenRouter)
  */
-import { chatCompletion, AI_MODELS } from '../utils/openRouter.js'
+import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 import { getConversation, addMessage, clearConversation } from '../utils/chatMemory.js'
 
 export default async function chatCommand(sock, msg, args = []) {
@@ -49,7 +49,7 @@ export default async function chatCommand(sock, msg, args = []) {
             { role: 'user', content: input }
         ]
 
-        const response = await chatCompletion(AI_MODELS.GPT4, messages)
+        const response = await chatCompletion(AI_MODELS.MIXTRAL, messages)
 
         // Add AI response to history
         addMessage(sender, 'assistant', response)

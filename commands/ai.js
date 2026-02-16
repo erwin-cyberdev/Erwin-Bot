@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { chatCompletion, AI_MODELS } from '../utils/openRouter.js'
+import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 
 // Clé API Gemini fallback
 const GEMINI_API_KEY = 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
@@ -16,17 +16,17 @@ export default async function aiCommand(sock, msg, args) {
         return
     }
 
-    await sock.sendMessage(from, { text: '🤖 Erwin-Bot réfléchit...' }, { quoted: msg })
+    await sock.sendMessage(from, { text: '🤖 Erwin-Bot (Groq) réfléchit...' }, { quoted: msg })
 
     try {
-        // 1. Essayer OpenRouter (Gemini via OpenRouter)
+        // 1. Essayer Groq (Llama 3.3)
         try {
-            const response = await chatCompletion(AI_MODELS.GEMINI, [{ role: 'user', content: prompt }])
+            const response = await chatCompletion(AI_MODELS.LLAMA_3_3, [{ role: 'user', content: prompt }])
             if (response) {
                 return await sock.sendMessage(from, { text: `🤖 *Erwin-AI :*\n\n${response}` }, { quoted: msg })
             }
         } catch (orError) {
-            console.error('Erreur OpenRouter, tentative fallback Gemini SDK:', orError.message)
+            console.error('Erreur Groq, tentative fallback Gemini SDK:', orError.message)
         }
 
         // 2. Fallback sur Gemini SDK direct
@@ -35,7 +35,7 @@ export default async function aiCommand(sock, msg, args) {
 
         if (!responseText) throw new Error('Réponse vide de Gemini SDK')
 
-        await sock.sendMessage(from, { text: `✨ *Erwin-AI (Fallback) :*\n\n${responseText}` }, { quoted: msg })
+        await sock.sendMessage(from, { text: `✨ *Erwin-AI (Fallback Gemini) :*\n\n${responseText}` }, { quoted: msg })
 
     } catch (error) {
         console.error('Erreur AI totale:', error)

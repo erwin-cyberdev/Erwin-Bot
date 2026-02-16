@@ -1,0 +1,112 @@
+{
+  "userCommands": {
+    "102160729637002@lid": [
+      {
+        "command": "waifu",
+        "timestamp": 1771258268098
+      },
+      {
+        "command": "waifu",
+        "timestamp": 1771258286383
+      },
+      {
+        "command": "imagine",
+        "timestamp": 1771258302134
+      }
+    ],
+    "61912188502143@lid": [
+      {
+        "command": "kick",
+        "timestamp": 1771262463075
+      },
+      {
+        "command": "kick",
+        "timestamp": 1771262496822
+      }
+    ],
+    "240849501864152@lid": [
+      {
+        "command": "ping",
+        "timestamp": 1771252473439
+      }
+    ],
+    "199179594899585@lid": [
+      {
+        "command": "extract",
+        "timestamp": 1771256547380
+      }
+    ]
+  },
+  "userWarnings": {},
+  "blacklist": {},
+  "suspiciousPatterns": {
+    "102160729637002@lid": {
+      "actions": [
+        {
+          "action": "song",
+          "timestamp": 1771258233336
+        },
+        {
+          "action": "waifu",
+          "timestamp": 1771258268098
+        },
+        {
+          "action": "waifu",
+          "timestamp": 1771258286384
+        },
+        {
+          "action": "imagine",
+          "timestamp": 1771258302134
+        }
+      ],
+      "score": 0
+    },
+    "61912188502143@lid": {
+      "actions": [
+        {
+          "action": "kick",
+          "timestamp": 1771262428847
+        },
+        {
+          "action": "kick",
+          "timestamp": 1771262463076
+        },
+        {
+          "action": "kick",
+          "timestamp": 1771262496822
+        }
+      ],
+      "score": 0
+    },
+    "240849501864152@lid": {
+      "actions": [
+        {
+          "action": "ping",
+          "timestamp": 1771252304000
+        },
+        {
+          "action": "ping",
+          "timestamp": 1771252473439
+        }
+      ],
+      "score": 0
+    },
+    "199179594899585@lid": {
+      "actions": [
+        {
+          "action": "ping",
+          "timestamp": 1771256465913
+        },
+        {
+          "action": "menu",
+          "timestamp": 1771256479002
+        },
+        {
+          "action": "extract",
+          "timestamp": 1771256547380
+        }
+      ],
+      "score": 0
+    }
+  }
+}

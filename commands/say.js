@@ -55,15 +55,6 @@ export default async function (sock, msg, args) {
     let lang = 'fr'
 
     if (useAI) {
-      // Utiliser l'IA pour générer du contenu via OpenRouter
-      // API Key is hardcoded in openRouter.js
-      const apiKey = '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'
-      if (!apiKey || apiKey.includes('PLACEHOLDER')) {
-        return sock.sendMessage(from, {
-          text: '❌ OPENROUTER_API_KEY non configurée dans le code.'
-        }, { quoted: msg })
-      }
-
       const prompt = args.slice(1).join(' ')
       if (!prompt) {
         return sock.sendMessage(from, {
@@ -72,14 +63,14 @@ export default async function (sock, msg, args) {
       }
 
       await sock.sendMessage(from, {
-        text: '🤖 L\'IA génère le contenu...'
+        text: '🤖 L\'IA génère le contenu (Groq)...'
       }, { quoted: msg })
 
-      // Import OpenRouter client
-      const { chatCompletion, AI_MODELS } = await import('../utils/openRouter.js')
+      // Import Groq client
+      const { chatCompletion, AI_MODELS } = await import('../utils/groq.js')
 
       const response = await chatCompletion(
-        AI_MODELS.GEMINI,
+        AI_MODELS.LLAMA_3_1_8B,
         [{ role: 'user', content: prompt }]
       )
 
@@ -161,13 +152,13 @@ Raisons possibles:
 • Bibliothèque gTTS non installée
 • Problème de connexion
 • Texte invalide ou langue non supportée
-• Pour mode IA: OPENROUTER_API_KEY manquante
+• Pour mode IA: GROQ_API_KEY manquante
 
 💡 *Solutions :*
 • Installe gTTS: npm install gtts
 • Vérifie ta connexion internet
 • Utilise un texte plus court
-• Configure OPENROUTER_API_KEY pour le mode IA
+• Configure GROQ_API_KEY dans le code (utils/groq.js)
 
 Erreur: ${err.message || 'Inconnue'}`
     }, { quoted: msg })

@@ -1,52 +1,38 @@
-/**
- * commands/transcribe.js
- * Convert voice/audio message to text using OpenRouter
- */
 import fetch from 'node-fetch'
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
+import FormData from 'form-data'
 
 const writeFile = promisify(fs.writeFile)
 const unlink = promisify(fs.unlink)
 
-const WHISPER_API_URL = 'https://openrouter.ai/api/v1/audio/transcriptions'
+const GROQ_WHISPER_URL = 'https://api.groq.com/openai/v1/audio/transcriptions'
+const GROQ_API_KEY = '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'
 const TIMEOUT_MS = 60000
 
 export default async function transcribeCommand(sock, msg, args) {
     const from = msg.key.remoteJid
 
-    // Check for audio message (quoted or direct)
     const quotedInfo = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
     const audioMsg = msg.message?.audioMessage || quotedInfo?.audioMessage
 
     if (!audioMsg) {
         return sock.sendMessage(from, {
-            text: `🎤 *Transcription Vocale*
-
+            text: `🎤 *Transcription Vocale (Groq)*
+            
 ❌ Usage :
 Réponds à un message vocal avec \`.transcribe\`
 
-💡 Fonctionne avec :
-• Messages vocaux WhatsApp
-• Notes audio
-• Fichiers audio courts
-
-⚠️ Limite : ~10 min`
+💡 Rapide et précis avec Groq Whisper.`
         }, { quoted: msg })
     }
 
-    // Check API key
-    // API Key is hardcoded below
-
-    await sock.sendMessage(from, {
-        text: '🎤 Transcription en cours...'
-    }, { quoted: msg })
+    await sock.sendMessage(from, { text: '🎤 Transcription en cours (Groq)...' }, { quoted: msg })
 
     let tempFile = null
 
     try {
-        // Download audio
         const mediaSource = msg.message?.extendedTextMessage?.contextInfo || msg
         const buffer = await sock.downloadMediaMessage(mediaSource, { timeout: 20000 })
 
@@ -54,28 +40,21 @@ Réponds à un message vocal avec \`.transcribe\`
             throw new Error('Impossible de télécharger l\'audio')
         }
 
-        // Save to temp file
         const tmpDir = path.join(process.cwd(), 'tmp')
         if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true })
 
         tempFile = path.join(tmpDir, `voice_${Date.now()}.ogg`)
         await writeFile(tempFile, buffer)
 
-        // Prepare form data
         const formData = new FormData()
-        formData.append('file', buffer, {
-            filename: 'audio.ogg',
-            contentType: audioMsg.mimetype || 'audio/ogg'
-        })
-        formData.append('model', 'whisper-1')
+        formData.append('file', fs.createReadStream(tempFile))
+        formData.append('model', 'whisper-large-v3-turbo')
 
-        // Call OpenRouter Whisper API
-        const response = await fetch(WHISPER_API_URL, {
+        const response = await fetch(GROQ_WHISPER_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer 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`,
-                'HTTP-Referer': 'https://erwin-bot.onrender.com',
-                'X-Title': 'Erwin-Bot'
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                ...formData.getHeaders()
             },
             body: formData,
             timeout: TIMEOUT_MS
@@ -84,7 +63,7 @@ Réponds à un message vocal avec \`.transcribe\`
         const json = await response.json()
 
         if (!response.ok) {
-            throw new Error(json?.error?.message || `Erreur API ${response.status}`)
+            throw new Error(json?.error?.message || `Erreur API Groq ${response.status}`)
         }
 
         const transcription = json?.text?.trim()
@@ -98,22 +77,11 @@ Réponds à un message vocal avec \`.transcribe\`
         }, { quoted: msg })
 
     } catch (err) {
-        console.error('❌ Erreur .transcribe:', err)
-
-        let message = `❗ Erreur : ${err.message}`
-        if (err.message.includes('Timeout')) message = '⌛ Délai dépassé (fichier trop long ?)'
-        if (err.message.includes('télécharger')) message = '⚠️ Impossible de télécharger l\'audio'
-        if (err.message.includes('401')) message = '⚠️ Clé API invalide'
-
-        await sock.sendMessage(from, { text: message }, { quoted: msg })
+        console.error('❌ Erreur .transcribe Groq:', err)
+        await sock.sendMessage(from, { text: `❗ Erreur : ${err.message}` }, { quoted: msg })
     } finally {
-        // Clean up temp file
         if (tempFile && fs.existsSync(tempFile)) {
-            try {
-                await unlink(tempFile)
-            } catch (e) {
-                console.warn('Could not delete temp file:', e)
-            }
+            try { await unlink(tempFile) } catch { }
         }
     }
 }
