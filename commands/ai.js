@@ -5,7 +5,7 @@ import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 const GEMINI_API_KEY = 'AIzaSyDztlCEel4jrWOcWWuUSfywtg4Z_N5MeHw'
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
 export default async function aiCommand(sock, msg, args) {
     const from = msg.key.remoteJid
