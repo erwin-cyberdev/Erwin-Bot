@@ -1,4 +1,4 @@
-import { downloadContentFromMessage } from '@whiskeysockets/baileys';
+import { downloadContentFromMessage } from 'baileys';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { isOwner } from '../utils/permissions.js';

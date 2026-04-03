@@ -2,10 +2,10 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import makeWASocket, {
-  fetchLatestBaileysVersion,
-  useMultiFileAuthState
-} from '@whiskeysockets/baileys'
+import pkg from 'baileys'
+const makeWASocket = pkg.default || pkg.makeWASocket || (typeof pkg === 'function' ? pkg : pkg)
+const fetchLatestBaileysVersion = pkg.fetchLatestBaileysVersion || pkg.default?.fetchLatestBaileysVersion
+const useMultiFileAuthState = pkg.useMultiFileAuthState || pkg.default?.useMultiFileAuthState
 import qrcode from 'qrcode-terminal'
 import fs from 'fs'
 import path from 'path'
