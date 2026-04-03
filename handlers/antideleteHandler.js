@@ -94,7 +94,7 @@ async function storeMessage(message) {
     return messageData;
 }
 
-async function handleMessageRevocation(sock, key, participant) {
+async function handleRevoke(sock, key, participant) {
     if (!isEnabled()) return;
 
     try {
@@ -170,8 +170,10 @@ export function initAntiDelete(sock) {
         if (!isEnabled()) return;
         for (const update of updates) {
             if (update.update.messageStubType === 0 && update.key) {
-                await handleMessageRevocation(sock, update.key, update.participant);
+                await handleRevoke(sock, update.key, update.participant);
             }
         }
     });
 }
+
+export { handleRevoke };
