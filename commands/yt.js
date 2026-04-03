@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import yts from 'yt-search'
 import ytdlp from 'yt-dlp-exec'
+import { getYtdlpOptions } from '../utils/ytUtils.js'
 import { sendText, sendVideo } from '../utils/messageQueue.js'
 
 const TEMP_DIR = path.resolve('./tmp/video')
@@ -84,16 +85,14 @@ export default async function ytCommand(sock, msg, args = []) {
     const outputPath = path.join(TEMP_DIR, `${tempId}.mp4`)
 
     try {
-      const result = await ytdlp(url, {
+      const ytdlpOptions = await getYtdlpOptions(url, {
         output: outputPath,
         format: 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         mergeOutputFormat: 'mp4',
-        quiet: true,
-        noWarnings: true,
-        noCallHome: true,
-        addHeader: ['Referer: https://www.youtube.com/'],
         maxFilesize: `${Math.floor(MAX_MEDIA_BYTES / (1024 * 1024))}M`
       })
+
+      const result = await ytdlp(url, ytdlpOptions)
 
       if (result.stderr) {
         console.warn('yt-dlp stderr:', result.stderr)

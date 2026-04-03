@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import yts from 'yt-search'
 import ytdlp from 'yt-dlp-exec'
+import { getYtdlpOptions } from '../utils/ytUtils.js'
 
 const TEMP_DIR = path.resolve('./tmp/song')
 const MAX_AUDIO_BYTES = 30 * 1024 * 1024 // 30 MB par défaut
@@ -71,25 +72,16 @@ export default async function songCommand(sock, msg, args) {
     const outputPath = path.join(TEMP_DIR, `${tempId}.m4a`)
 
     try {
-      const result = await ytdlp(url, {
+      const ytdlpOptions = await getYtdlpOptions(url, {
         output: outputPath,
         format: 'bestaudio/best',
         extractAudio: true,
         audioFormat: 'm4a',
         audioQuality: '0',
-        quiet: true,
-        noWarnings: true,
-        noCallHome: true,
-        noCheckCertificate: true,
-        noPlaylist: true,
-        addHeader: [
-          'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer: https://www.youtube.com/'
-        ],
-        extractorArgs: 'youtube:player_client=android,web',
-        // Limiter la taille via --max-filesize si défini
         maxFilesize: `${Math.floor(MAX_AUDIO_BYTES / (1024 * 1024))}M`
       })
+
+      const result = await ytdlp(url, ytdlpOptions)
 
       if (result.stderr) {
         console.warn('yt-dlp stderr:', result.stderr)
