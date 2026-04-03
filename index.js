@@ -200,7 +200,7 @@ function startKeepAlive() {
     } catch (e) {
       console.error('⚓ Keep-alive ping failed:', e.message)
     }
-  }, 30 * 1000) // 30 secondes (Anti-veille Render)
+  }, 15 * 1000) // 15 secondes (Anti-veille Render)
   console.log(chalk.blue('⚓ Keep-alive system started'))
 }
 
@@ -488,18 +488,33 @@ async function start() {
       console.log('✅ Bot connecté et en attente de messages...')
 
       sock.ev.on('messages.upsert', async ({ messages }) => {
-        const msg = messages?.[0]
-        if (!msg || !msg.message) return
-
-        console.log('📩 Message reçu:', {
-          from: msg.key.remoteJid,
-          sender: msg.key.participant || msg.key.remoteJid,
-          text: msg.message.conversation || msg.message.extendedTextMessage?.text || ''
-        })
-
         const from = msg.key.remoteJid
-        const sender = msg.key.participant || msg.key.remoteJid
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text || ''
+        const isGroup = from.endsWith('@g.us')
+        const sender = msg.key.participant || from
+        const senderNumber = sender.split('@')[0]
+        
+        // Extraire le contenu textuel et le type
+        const messageType = Object.keys(msg.message)[0]
+        const text = msg.message.conversation || 
+                     msg.message.extendedTextMessage?.text || 
+                     msg.message.imageMessage?.caption || 
+                     msg.message.videoMessage?.caption || ''
+
+        // Magnifique log dans la console
+        const timestamp = new Date().toLocaleTimeString()
+        const typeLabel = isGroup ? chalk.black.bgYellow(' 👥 GROUPE ') : chalk.black.bgMagenta(' 👤 PRIVÉ ')
+        
+        console.log(`\n${chalk.gray(`[${timestamp}]`)} ${typeLabel} ${chalk.cyan('📩 Nouveau Message')}`)
+        console.log(`${chalk.gray('   ├─ Expéditeur:')} ${chalk.green(senderNumber)} ${chalk.gray(`(${sender})`)}`)
+        if (isGroup) {
+          console.log(`${chalk.gray('   ├─ Groupe ID:')} ${chalk.blue(from)}`)
+        }
+        console.log(`${chalk.gray('   ├─ Type:')} ${chalk.yellow(messageType)}`)
+        if (text) {
+          console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.white(text.length > 100 ? text.slice(0, 100) + '...' : text)}`)
+        } else {
+          console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.italic.gray('(Pas de texte)')}`)
+        }
 
         // Capturer le message pour l'anti-delete
         import('../handlers/antiDeleteHandler.js').then(m => m.captureMessageForAntiDelete(sock, msg)).catch(() => { })

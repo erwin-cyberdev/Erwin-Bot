@@ -70,8 +70,8 @@ function cancelTimer() {
 function schedule(sock) {
   cancelTimer()
   if (!currentConfig.enabled) return
-  const minutes = Number(currentConfig.intervalMinutes) || DEFAULT_CONFIG.intervalMinutes
-  const ms = Math.max(1, minutes) * 60 * 1000
+  const seconds = Number(currentConfig.intervalSeconds) || DEFAULT_CONFIG.intervalSeconds
+  const ms = seconds * 1000
   timer = setInterval(() => sendPing(sock), ms)
 }
 
