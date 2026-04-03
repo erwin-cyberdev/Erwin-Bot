@@ -348,6 +348,17 @@ async function start() {
           console.log(chalk.blue('\n🛡️ Démarrage du système de sécurité anti-ban...'))
           startHealthMonitoring(60000) // Monitoring toutes les minutes
           console.log(chalk.green('✅ Protections anti-ban activées (mode souple)'))
+
+          // Générer le SESSION_DATA pour Render (Persistence)
+          try {
+            const creds = JSON.parse(fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8'))
+            const sessionData = Buffer.from(JSON.stringify(creds)).toString('base64')
+            console.log(chalk.magenta('\n🔑 SESSION_DATA (Copie ceci pour Render) :'))
+            console.log(chalk.gray(sessionData))
+            console.log(chalk.yellow('\n💡 Instructions: Ajoute cette chaîne dans tes variables d\'env Render sous le nom "SESSION_DATA" pour rester connecté H24.\n'))
+          } catch (e) {
+            console.error('Erreur génération SESSION_DATA:', e.message)
+          }
           console.log(chalk.green('\n' + '═'.repeat(60) + '\n'))
           console.log(chalk.yellow('📬 En attente de messages...\n'))
         }
