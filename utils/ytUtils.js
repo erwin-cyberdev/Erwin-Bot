@@ -39,13 +39,14 @@ export async function getYtdlpOptions(url, extra = {}) {
     noCallHome: true,
     noCheckCertificate: true,
     noPlaylist: true,
+    forceIpv4: true, // Souvent nécessaire sur Render pour éviter les blocs IP terminaux
     addHeader: [
       'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Referer: https://www.youtube.com/',
       ...(extra.addHeader || [])
     ],
-    // Utilisation de plusieurs clients pour plus de robustesse
-    extractorArgs: 'youtube:player_client=android,web,ios'
+    // Utilisation de clients variés pour contourner les restrictions
+    extractorArgs: 'youtube:player_client=android_vr,web_creator,ios,android'
   }
 
   if (cookies) {

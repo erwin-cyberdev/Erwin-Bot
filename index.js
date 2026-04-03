@@ -29,6 +29,8 @@ import { initAntiDelete, handleRevoke } from './handlers/antideleteHandler.js'
 import { initAutoPing } from './utils/autoPing.js'
 import { isAdminOnly } from './config/adminOnly.js'
 import { handleAutoReact } from './utils/autoReact.js'
+import { getStats, trackCommand, trackMessage } from './utils/statsTracker.js'
+import { getServiceStatus } from './utils/render.js'
 
 // --- constantes & chemins ---
 const __dirname = process.cwd()
@@ -56,20 +58,28 @@ app.get('/qr', (req, res) => {
     const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(lastQR)}`
     res.send(`
       <!DOCTYPE html>
-      <html>
+      <html lang="fr">
         <head>
-          <title>Erwin-Bot QR Code</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Erwin-Bot - Connexion</title>
           <style>
-            body { background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-            img { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-            h1 { margin-bottom: 20px; color: #00ffcc; }
-            p { margin-top: 20px; color: #888; }
+            :root { --primary: #00ffcc; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
+            body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif; }
+            .container { background: var(--card); padding: 2rem; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+            img { background: white; padding: 1rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin: 1.5rem 0; }
+            h1 { font-size: 2rem; margin: 0; color: var(--primary); text-shadow: 0 0 15px rgba(0,255,204,0.3); }
+            p { color: #94a3b8; font-size: 1.1rem; }
+            .status { margin-top: 1rem; padding: 0.5rem 1rem; background: rgba(0,255,204,0.1); border-radius: 2rem; color: var(--primary); font-weight: 600; font-size: 0.9rem; }
           </style>
         </head>
         <body>
-          <h1>📦 Erwin-Bot Connection</h1>
-          <img src="${qrImage}" alt="QR Code">
-          <p>Scannez ce code pour connecter le bot</p>
+          <div class="container">
+            <h1>📦 Erwin-Bot</h1>
+            <div class="status">En attente de scan...</div>
+            <img src="${qrImage}" alt="QR Code">
+            <p>Scannez ce code pour connecter le bot</p>
+          </div>
           <script>setTimeout(() => location.reload(), 20000);</script>
         </body>
       </html>
@@ -77,6 +87,97 @@ app.get('/qr', (req, res) => {
   } else {
     res.send('QR Code non généré ou déjà scanné. <a href="/">Retour</a>')
   }
+})
+
+app.get('/stats', async (req, res) => {
+  const stats = getStats()
+  let renderInfo = null
+  try {
+    renderInfo = await getServiceStatus()
+  } catch (e) {
+    renderInfo = { error: 'API Render non configurée' }
+  }
+
+  const uptimeStr = (stats.uptime / (1000 * 60 * 60)).toFixed(2) + 'h'
+  const mem = (process.memoryUsage().rss / 1024 / 1024).toFixed(2) + ' MB'
+
+  res.setHeader('Content-Type', 'text/html')
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Erwin-Bot Dashboard</title>
+        <style>
+          :root { --primary: #00ffcc; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #3b82f6; }
+          body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 1.5rem; }
+          .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+          .card { background: var(--card); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+          .header { text-align: center; margin-bottom: 2.5rem; }
+          h1 { font-size: 2.5rem; margin: 0; color: var(--primary); text-shadow: 0 0 20px rgba(0,255,204,0.3); }
+          .stat-val { font-size: 2.5rem; font-weight: 800; color: var(--text); margin: 0.5rem 0; }
+          .stat-label { font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+          .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+          .live { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+          .btn { background: var(--accent); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 0.8rem; cursor: pointer; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 1rem; }
+          .usage-list { margin-top: 1rem; list-style: none; padding: 0; }
+          .usage-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>📊 Erwin-Bot Dashboard</h1>
+          <p>Statistiques en temps réel du bot WhatsApp</p>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <div class="stat-label">Statut Global</div>
+            <div class="stat-val"><span class="status-dot live"></span> Actif</div>
+            <p>Uptime: <strong>${uptimeStr}</strong></p>
+          </div>
+          <div class="card">
+            <div class="stat-label">Messages Reçus</div>
+            <div class="stat-val">${stats.messagesReceived}</div>
+            <p>Depuis le dernier démarrage</p>
+          </div>
+          <div class="card">
+            <div class="stat-label">Commandes Exécutées</div>
+            <div class="stat-val">${stats.commandsExecuted}</div>
+            <p>Usage total</p>
+          </div>
+          <div class="card">
+            <div class="stat-label">Consommation RAM</div>
+            <div class="stat-val">${mem}</div>
+            <p>Mémoire vive RSS</p>
+          </div>
+          <div class="card" style="grid-column: span 1 / -1">
+            <div class="stat-label">Popularité des Commandes</div>
+            <div class="usage-list">
+              ${Object.entries(stats.commandUsage || {})
+                .sort((a,b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([cmd, count]) => `
+                  <div class="usage-item">
+                    <span>!${cmd}</span>
+                    <strong>${count}</strong>
+                  </div>
+                `).join('') || '<p>Aucune commande tracée</p>'}
+            </div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Render Instance</div>
+            <p>Service: <strong>${renderInfo.name || 'N/A'}</strong></p>
+            <p>Status: <span style="color: ${renderInfo.status === 'live' ? '#22c55e' : '#ef4444'}">${renderInfo.status?.toUpperCase() || 'OFFLINE'}</span></p>
+            <p>Suspended: ${renderInfo.suspended === 'suspended' ? 'YES' : 'NO'}</p>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 3rem; color: #64748b; font-size: 0.9rem;">
+          Erwin-Bot Dashboard &copy; 2026 - <a href="/qr" style="color: var(--primary)">Voir QR Code</a>
+        </div>
+      </body>
+    </html>
+  `)
 })
 
 app.listen(PORT, () => {
@@ -403,6 +504,9 @@ async function start() {
         // Capturer le message pour l'anti-delete
         import('../handlers/antiDeleteHandler.js').then(m => m.captureMessageForAntiDelete(sock, msg)).catch(() => { })
 
+        // Tracker de statistiques
+        trackMessage()
+
         // Gestion des auto-réactions (non-bloquant)
         if (from.endsWith('@g.us')) {
           handleAutoReact(sock, msg, from, text).catch(() => { })
@@ -466,6 +570,7 @@ async function start() {
         }
 
         try {
+          trackCommand(cmd)
           await commandFunc(sock, msg, args)
         } catch (err) {
           console.error(`Erreur commande ${cmd}:`, err)
