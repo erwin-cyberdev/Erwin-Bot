@@ -10,9 +10,11 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: GEMINI_API_KEY
+      - key: GROQ_API_KEY
         sync: false
       - key: OWNER_NUMBER
         sync: false
+      - key: PREFIX
+        value: "-"
       - key: SESSION_DATA
         sync: false

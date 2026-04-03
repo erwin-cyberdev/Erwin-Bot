@@ -1,4 +1,4 @@
-// check-deps.js - Vérifier toutes les dépendances requises
+// check-deps.js - Vérifier toutes les dépendances requises (Version Refactorisée)
 import chalk from 'chalk'
 
 const requiredPackages = [
@@ -8,14 +8,12 @@ const requiredPackages = [
   { name: 'dotenv', critical: true },
   { name: 'axios', critical: true },
   
-  // IA
-  { name: '@google/generative-ai', critical: false },
-  { name: 'openai', critical: false },
-  { name: 'gtts', critical: true },  // Pour .say
+  // IA & Services (Groq)
+  { name: 'node-fetch', critical: true },
+  { name: 'form-data', critical: true },
   
   // Multimédia
   { name: '@distube/ytdl-core', critical: false },
-  { name: 'ytdl-core', critical: false },
   { name: 'yt-search', critical: false },
   { name: 'fluent-ffmpeg', critical: false },
   { name: 'wa-sticker-formatter', critical: false },
@@ -24,7 +22,6 @@ const requiredPackages = [
   { name: 'chalk', critical: true },
   { name: 'figlet', critical: true },
   { name: 'pino', critical: true },
-  { name: 'qrcode', critical: false },
   { name: 'moment-timezone', critical: false }
 ]
 

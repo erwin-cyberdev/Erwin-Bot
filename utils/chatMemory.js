@@ -5,7 +5,7 @@
 
 // Store conversations in memory (per user)
 const conversations = new Map()
-const MAX_HISTORY = 10 // Keep last 10 messages
+const MAX_HISTORY = 20 // Keep last 10 prompts (user + AI messages)
 const TTL = 30 * 60 * 1000 // 30 minutes
 
 /**

@@ -12,7 +12,7 @@ function getConfig() {
   } catch (error) {
     console.error('Erreur lors de la lecture du fichier de préfixe:', error)
   }
-  return { prefix: '!' }
+  return { prefix: process.env.PREFIX || '!' }
 }
 
 // Fonction utilitaire pour écrire dans le fichier de configuration
