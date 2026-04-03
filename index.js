@@ -47,7 +47,7 @@ let lastQR = null
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
 app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l\'endpoint health
 
-const RENDER_URL = 'https://erwin-bot.onrender.com' // Définition globale
+const RENDER_URL = process.env.RENDER_URL || ''
 const BOT_NAME = 'Erwin-Bot'
 
 app.get('/qr', (req, res) => {
@@ -79,7 +79,10 @@ app.get('/qr', (req, res) => {
   }
 })
 
-app.listen(PORT, () => console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`)))
+app.listen(PORT, () => {
+  console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`))
+  if (RENDER_URL) startKeepAlive()
+})
 
 function startKeepAlive() {
   const url = RENDER_URL
@@ -96,7 +99,7 @@ function startKeepAlive() {
     } catch (e) {
       console.error('⚓ Keep-alive ping failed:', e.message)
     }
-  }, 3 * 60 * 1000) // 3 minutes
+  }, 30 * 1000) // 30 secondes (Anti-veille Render)
   console.log(chalk.blue('⚓ Keep-alive system started'))
 }
 
