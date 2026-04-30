@@ -203,7 +203,7 @@ function startKeepAlive() {
         console.log(chalk.blue(`⚓ URL Render détectée via API: ${url}`))
         setupInterval(url)
       }
-    }).catch(e => console.error('⚓ Échec détection URL via API:', e.message))
+    }).catch(() => {})
   } else if (url) {
     setupInterval(url)
   }
@@ -331,6 +331,9 @@ async function start() {
   if (!net.ok) console.log(chalk.red('⚠️ Vérification réseau échouée :'), net.err)
   else console.log(chalk.green(`🌐 Réseau OK (HTTP ${net.statusCode})`))
 
+  const authDir = path.join(process.cwd(), 'auth_info')
+  const tarPath = path.join(process.cwd(), 'session.tar.gz')
+
   if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
 
   let version
@@ -345,8 +348,6 @@ async function start() {
   const commands = await loadCommands()
 
   // --- RESTAURATION DE SESSION RENDER ---
-  const authDir = path.join(process.cwd(), 'auth_info')
-  const tarPath = path.join(process.cwd(), 'session.tar.gz')
 
   if (!fs.existsSync(authDir) && process.env.SESSION_DATA) {
     try {
