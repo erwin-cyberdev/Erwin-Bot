@@ -1772,5 +1772,90 @@
       "bots": false
     },
     "language": "fr"
+  },
+  "120363420289051379@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363424820454367@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363404764328560@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363407645402289@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363409212463394@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
   }
 }

@@ -1,16 +1,8 @@
 // commands/listbanned.js - Owner only
-import { isOwner, getBanned } from '../utils/permissions.js'
+import { ownerOnly, getBanned } from '../utils/permissions.js'
 
-export default async function (sock, msg) {
+export default ownerOnly(async function (sock, msg) {
   const from = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
-    }, { quoted: msg })
-  }
 
   const banned = getBanned()
 
@@ -47,4 +39,4 @@ ${lines.join('\n')}
     text: message,
     mentions: normalized
   }, { quoted: msg })
-}
+})

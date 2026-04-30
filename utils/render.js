@@ -72,3 +72,45 @@ export async function getRecentDeploys(limit = 5) {
     throw error
   }
 }
+
+/**
+ * Met à jour une variable d'environnement sur Render
+ * Attention: Provoque un redéploiement du service
+ */
+export async function updateRenderEnvVar(key, value) {
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    throw new Error('RENDER_API_KEY ou RENDER_SERVICE_ID manquant dans le .env')
+  }
+
+  try {
+    // 1. Récupérer les variables existantes pour ne pas les effacer
+    const { data: currentEnvVars } = await axiosJSON.get(`${BASE_URL}/services/${RENDER_SERVICE_ID}/env-vars`, {
+      headers: getHeaders()
+    })
+
+    // 2. Préparer la nouvelle liste
+    let updated = false
+    const newEnvVars = currentEnvVars.map(ev => {
+      if (ev.envVar.key === key) {
+        updated = true
+        return { key, value }
+      }
+      return { key: ev.envVar.key, value: ev.envVar.value }
+    })
+
+    if (!updated) {
+      newEnvVars.push({ key, value })
+    }
+
+    // 3. Envoyer la mise à jour (PUT remplace la liste)
+    const response = await axiosJSON.put(`${BASE_URL}/services/${RENDER_SERVICE_ID}/env-vars`, newEnvVars, {
+      headers: getHeaders()
+    })
+    
+    console.log(`✅ Variable Render ${key} mise à jour avec succès. Redéploiement en cours...`)
+    return response.data
+  } catch (error) {
+    console.error(`❌ Erreur Render API (updateRenderEnvVar ${key}):`, error.response?.data || error.message)
+    throw error
+  }
+}

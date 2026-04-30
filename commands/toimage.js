@@ -4,7 +4,7 @@ import { execFile } from 'child_process'
 import { promisify } from 'util'
 import sharp from 'sharp'
 import { fileTypeFromBuffer } from 'file-type'
-import { downloadMediaMessage } from '@whiskeysockets/baileys'
+import { downloadMediaMessage } from 'baileys'
 
 const execFileP = promisify(execFile)
 

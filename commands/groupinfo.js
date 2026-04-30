@@ -1,4 +1,4 @@
-import { downloadMediaMessage, getContentType } from '@whiskeysockets/baileys'
+import { downloadMediaMessage, getContentType } from 'baileys'
 import fs from 'fs'
 import path from 'path'
 import { isAdmin, isOwner } from '../utils/permissions.js'

@@ -1,17 +1,8 @@
-import { isOwner } from '../utils/permissions.js';
+import { ownerOnly } from '../utils/permissions.js';
 import { setAdminOnly, isAdminOnly as getAdminOnlyStatus } from '../config/adminOnly.js';
 
-export default async function adminOnlyCommand(sock, msg, args) {
+export default ownerOnly(async function adminOnlyCommand(sock, msg, args) {
     const from = msg.key.remoteJid;
-    const sender = msg.key.participant || msg.key.remoteJid;
-    
-    // Vérifier si l'expéditeur est propriétaire
-    if (!isOwner(sender)) {
-        await sock.sendMessage(from, { 
-            text: '❌ Cette commande est réservée aux propriétaires du bot.' 
-        }, { quoted: msg });
-        return;
-    }
 
     const action = args[0]?.toLowerCase();
     
@@ -33,4 +24,4 @@ export default async function adminOnlyCommand(sock, msg, args) {
             text: `ℹ️ Mode admin-only est actuellement *${status}*\n\nUtilisation :\n- *.adminonly on* : Active le mode admin-only\n- *.adminonly off* : Désactive le mode admin-only` 
         }, { quoted: msg });
     }
-}
+})

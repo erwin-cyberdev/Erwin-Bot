@@ -2,7 +2,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { Sticker, StickerTypes } from 'wa-sticker-formatter'
-import { downloadMediaMessage } from '@whiskeysockets/baileys'
+import { downloadMediaMessage } from 'baileys'
 
 const TEMP_DIR = path.resolve('./tmp/stickers')
 const MAX_IMAGE_BYTES = 1024 * 1024 // 1MB

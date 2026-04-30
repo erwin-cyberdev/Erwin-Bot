@@ -1,16 +1,9 @@
 // commands/setadmin.js - Owner only
-import { isOwner, addAdmin, isAdmin } from '../utils/permissions.js'
+import { ownerOnly, addAdmin, isAdmin } from '../utils/permissions.js'
 
-export default async function (sock, msg, args) {
+export default ownerOnly(async function (sock, msg, args) {
   const from = msg.key.remoteJid
   const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
-    }, { quoted: msg })
-  }
 
   // Récupérer la cible
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
@@ -36,7 +29,7 @@ export default async function (sock, msg, args) {
   }
 
   // Promouvoir
-  const success = addAdmin(target)
+  const success = addAdmin(target, sender)
   if (success) {
     await sock.sendMessage(from, {
       text: `👑 @${target.split('@')[0]} est maintenant admin du bot.\nIl peut utiliser les commandes admin (.antilink, .antidelete, .warn, etc.)`,
@@ -44,7 +37,7 @@ export default async function (sock, msg, args) {
     }, { quoted: msg })
   } else {
     await sock.sendMessage(from, {
-      text: '⚠️ Erreur lors de la promotion.'
+      text: '⚠️ Erreur lors de la promotion. Vérifiez que le numéro est valide (pas un ID de groupe).'
     }, { quoted: msg })
   }
-}
+})

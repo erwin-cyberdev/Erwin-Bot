@@ -3,7 +3,7 @@ import chalk from 'chalk'
 
 const requiredPackages = [
   // Core
-  { name: '@whiskeysockets/baileys', critical: true },
+  { name: 'baileys', critical: true },
   { name: 'qrcode-terminal', critical: true },
   { name: 'dotenv', critical: true },
   { name: 'axios', critical: true },
@@ -13,7 +13,6 @@ const requiredPackages = [
   { name: 'form-data', critical: true },
   
   // Multimédia
-  { name: '@distube/ytdl-core', critical: false },
   { name: 'yt-search', critical: false },
   { name: 'fluent-ffmpeg', critical: false },
   { name: 'wa-sticker-formatter', critical: false },

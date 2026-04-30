@@ -1,17 +1,12 @@
 // commands/render.js - Commande de gestion Render
 import { getServiceStatus, restartService, getRecentDeploys } from '../utils/render.js'
-import { isOwner } from '../utils/permissions.js'
+import { ownerOnly } from '../utils/permissions.js'
 import chalk from 'chalk'
 
-export default async function (sock, msg, args) {
+export default ownerOnly(async function (sock, msg, args) {
   const from = msg.key.remoteJid
   const sender = msg.key.participant || msg.key.remoteJid
   const prefix = '-' // On pourrait le récupérer dynamiquement via getPrefix() si dispo
-
-  // Vérification des permissions (Seul l'owner peut gérer Render)
-  if (!isOwner(sender)) {
-    return sock.sendMessage(from, { text: '🚫 Cette commande est réservée à l\'owner du bot.' }, { quoted: msg })
-  }
 
   const subCommand = args[0]?.toLowerCase()
 
@@ -84,4 +79,4 @@ export default async function (sock, msg, args) {
     const errorMsg = err.response?.data?.message || err.message
     await sock.sendMessage(from, { text: `❌ *ERREUR RENDER API*\n\n${errorMsg}` }, { quoted: msg })
   }
-}
+})

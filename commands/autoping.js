@@ -1,20 +1,12 @@
 import { getAutoPingConfig, setAutoPingConfig, restartAutoPing } from '../utils/autoPing.js'
 import { sendWithTyping } from '../utils/sendWithTyping.js'
-import { isOwner } from '../utils/permissions.js'
+import { ownerOnly } from '../utils/permissions.js'
 
 const MIN_INTERVAL = 5
 const MAX_INTERVAL = 240
 
-export default async function autopingCommand(sock, msg, args) {
+export default ownerOnly(async function autopingCommand(sock, msg, args) {
   const chatId = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  if (!isOwner(sender)) {
-    await sock.sendMessage(chatId, {
-      text: '⛔ Cette commande est réservée au propriétaire du bot.'
-    }, { quoted: msg })
-    return
-  }
 
   if (!args.length) {
     const config = getAutoPingConfig()
@@ -100,4 +92,4 @@ Commandes disponibles :
       text: `⚠️ Erreur lors de la mise à jour AutoPing : ${err.message}`
     }, { quoted: msg })
   }
-}
+})

@@ -3,6 +3,10 @@ auth_info/
 .env
 tmp/
 logs/
+data/
+temp_media/
+temp/
 .DS_Store
 npm-debug.log
 .vscode/
+*.log

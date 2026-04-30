@@ -35,6 +35,12 @@
         "command": "extract",
         "timestamp": 1771256547380
       }
+    ],
+    "78529702158422@lid": [
+      {
+        "command": "manga",
+        "timestamp": 1777521271347
+      }
     ]
   },
   "userWarnings": {},
@@ -104,6 +110,35 @@
         {
           "action": "extract",
           "timestamp": 1771256547380
+        }
+      ],
+      "score": 0
+    },
+    "78529702158422@lid": {
+      "actions": [
+        {
+          "action": "ping",
+          "timestamp": 1777521000645
+        },
+        {
+          "action": "menu",
+          "timestamp": 1777521018063
+        },
+        {
+          "action": "info",
+          "timestamp": 1777521117613
+        },
+        {
+          "action": "ban",
+          "timestamp": 1777521134505
+        },
+        {
+          "action": "groupinfo",
+          "timestamp": 1777521200043
+        },
+        {
+          "action": "manga",
+          "timestamp": 1777521271347
         }
       ],
       "score": 0

@@ -79,7 +79,7 @@ function autoCleanup() {
   
   // Nettoyer les cooldowns expirés
   for (const [userId, timestamp] of userCooldowns.entries()) {
-    if (now - timestamp > oneHourAgo) {
+    if (timestamp < oneHourAgo) {
       userCooldowns.delete(userId)
     }
   }
@@ -96,7 +96,7 @@ function autoCleanup() {
   
   // Nettoyer les group tags expirés
   for (const [groupId, timestamp] of groupTagCooldowns.entries()) {
-    if (now - timestamp > oneHourAgo) {
+    if (timestamp < oneHourAgo) {
       groupTagCooldowns.delete(groupId)
     }
   }

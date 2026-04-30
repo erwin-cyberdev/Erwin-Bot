@@ -1,16 +1,8 @@
 // commands/broadcast.js - Owner only
-import { isOwner } from '../utils/permissions.js'
+import { ownerOnly } from '../utils/permissions.js'
 
-export default async function (sock, msg, args) {
+export default ownerOnly(async function (sock, msg, args) {
   const from = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
-    }, { quoted: msg })
-  }
 
   const message = args.join(' ').trim()
   if (!message) {
@@ -40,8 +32,7 @@ export default async function (sock, msg, args) {
     // Envoyer le message à chaque groupe
     for (const group of groupList) {
       try {
-        const broadcastMsg = `${message}`
-        await sock.sendMessage(group.id, { text: broadcastMsg })
+        await sock.sendMessage(group.id, { text: message })
         success++
         // Délai pour éviter le spam
         await new Promise(res => setTimeout(res, 1000))
@@ -61,4 +52,4 @@ export default async function (sock, msg, args) {
       text: '❗ Erreur lors du broadcast.'
     }, { quoted: msg })
   }
-}
+})

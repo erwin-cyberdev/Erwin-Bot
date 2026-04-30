@@ -1,16 +1,9 @@
 // commands/unban.js - Owner only
-import { isOwner, unbanUser } from '../utils/permissions.js'
+import { ownerOnly, unbanUser } from '../utils/permissions.js'
 
-export default async function (sock, msg, args) {
+export default ownerOnly(async function (sock, msg, args) {
   const from = msg.key.remoteJid
   const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
-    }, { quoted: msg })
-  }
 
   // Récupérer la cible
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
@@ -29,7 +22,7 @@ export default async function (sock, msg, args) {
   }
 
   // Débannir
-  const success = unbanUser(target)
+  const success = unbanUser(target, sender)
   if (success) {
     await sock.sendMessage(from, {
       text: `✅ @${target.split('@')[0]} a été débanni.\nIl peut maintenant utiliser le bot.`,
@@ -40,4 +33,4 @@ export default async function (sock, msg, args) {
       text: '⚠️ Cet utilisateur n\'est pas banni.'
     }, { quoted: msg })
   }
-}
+})

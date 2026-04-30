@@ -1,15 +1,10 @@
 import { setPrefix, getPrefix, resetPrefix } from '../utils/prefixManager.js'
-import { isOwner } from '../utils/permissions.js'
+import { ownerOnly } from '../utils/permissions.js'
 
-export default async function setprefixCommand(sock, msg, args) {
+export default ownerOnly(async function setprefixCommand(sock, msg, args) {
   const from = msg.key.remoteJid
-  
-  // Vérifier si l'utilisateur est propriétaire
-  if (!isOwner(msg.key.participant || msg.key.remoteJid)) {
-    return await sock.sendMessage(from, { 
-      text: '❌ Seul le propriétaire du bot peut modifier le préfixe.'
-    })
-  }
+
+
 
   // Si aucun argument n'est fourni, afficher l'aide
   if (args.length === 0) {
@@ -50,7 +45,7 @@ export default async function setprefixCommand(sock, msg, args) {
       text: `❌ ${result.message}`
     })
   }
-}
+})
 
 // Ajout des métadonnées pour le menu d'aide
 export const commandInfo = {

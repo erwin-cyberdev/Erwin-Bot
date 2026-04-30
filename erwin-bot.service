@@ -1,0 +1,30 @@
+[Unit]
+Description=Erwin-Bot WhatsApp Bot
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=erwin
+WorkingDirectory=/home/erwin/Erwin-Bot
+ExecStart=/usr/bin/node /home/erwin/Erwin-Bot/index.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=erwin-bot
+
+# Limites de sécurité
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/home/erwin/Erwin-Bot
+
+# Variables d'environnement
+EnvironmentFile=/home/erwin/Erwin-Bot/.env
+
+# Limites de ressources
+MemoryMax=512M
+CPUQuota=80%
+
+[Install]
+WantedBy=multi-user.target

@@ -56,8 +56,8 @@ async function extractLyricsWithAI(html, query) {
   // Tronquer le HTML pour rester dans les limites de tokens (on prend le milieu/fin où sont souvent les lyrics)
   // Souvent les lyrics Genius sont dans des balises Lyrics__Container
   const sanitizedHtml = html
-    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gmb, '')
-    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gmb, '')
+    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, '')
+    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gm, '')
     .slice(0, 50000) // Garder un bloc conséquent mais gérable
 
   const prompt = `

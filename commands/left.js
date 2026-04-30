@@ -1,4 +1,7 @@
-export default async function (sock, msg) {
+// commands/left.js - Owner only
+import { ownerOnly } from '../utils/permissions.js'
+
+export default ownerOnly(async function (sock, msg) {
   const from = msg.key.remoteJid
 
   if (!from?.endsWith('@g.us')) {
@@ -12,4 +15,4 @@ export default async function (sock, msg) {
     console.log('Erreur .left:', e)
     return sock.sendMessage(from, { text: '❌ Impossible de quitter le groupe.' }, { quoted: msg })
   }
-}
+})

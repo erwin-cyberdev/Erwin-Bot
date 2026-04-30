@@ -4,6 +4,7 @@ import path from 'path';
 import { isOwner } from '../utils/permissions.js';
 import { 
     isEnabled, 
+    setEnabled,
     messageStore, 
     deleteMessage, 
     TEMP_MEDIA_DIR, 
@@ -157,7 +158,12 @@ async function handleRevoke(sock, key, participant) {
     }
 }
 
+let _antideleteInitialized = false;
+
 export function initAntiDelete(sock) {
+    if (_antideleteInitialized) return;
+    _antideleteInitialized = true;
+
     sock.ev.on('messages.upsert', async ({ messages }) => {
         if (!isEnabled()) return;
         for (const msg of messages) {
@@ -174,6 +180,15 @@ export function initAntiDelete(sock) {
             }
         }
     });
+
+    console.log('🛡️ Anti-delete initialisé');
 }
 
-export { handleRevoke };
+const isAntideleteEnabled = () => isEnabled();
+const setAntideleteEnabled = (state) => setEnabled(state);
+
+export { 
+    handleRevoke, 
+    isAntideleteEnabled, 
+    setAntideleteEnabled 
+};

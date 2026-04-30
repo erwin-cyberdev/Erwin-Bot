@@ -1,17 +1,9 @@
 // commands/botstats.js - Owner only
-import { isOwner, getAdmins, getBanned } from '../utils/permissions.js'
+import { ownerOnly, getAdmins, getBanned } from '../utils/permissions.js'
 import os from 'os'
 
-export default async function (sock, msg) {
+export default ownerOnly(async function (sock, msg) {
   const from = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, {
-      text: '⛔ Cette commande est réservée au propriétaire du bot.'
-    }, { quoted: msg })
-  }
 
   try {
     // Récupérer les groupes
@@ -74,4 +66,4 @@ export default async function (sock, msg) {
       text: '❗ Erreur lors de la récupération des statistiques.'
     }, { quoted: msg })
   }
-}
+})

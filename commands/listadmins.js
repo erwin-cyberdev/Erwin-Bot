@@ -1,16 +1,8 @@
 // commands/listadmins.js - Owner only
-import { isOwner, getAdmins } from '../utils/permissions.js'
+import { ownerOnly, getAdmins, getOwners } from '../utils/permissions.js'
 
-export default async function (sock, msg) {
+export default ownerOnly(async function (sock, msg) {
   const from = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, {
-      text: '⛔ Cette commande est réservée au propriétaire du bot.'
-    }, { quoted: msg })
-  }
 
   const admins = getAdmins()
   const owner = '237674151474' // Primary owner number
@@ -35,4 +27,4 @@ export default async function (sock, msg) {
     text,
     mentions
   }, { quoted: msg })
-}
+})

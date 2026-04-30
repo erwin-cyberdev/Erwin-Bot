@@ -1,19 +1,11 @@
 // commands/securitystats.js - Stats de sécurité (Owner only)
-import { isOwner } from '../utils/permissions.js'
+import { ownerOnly } from '../utils/permissions.js'
 import { getSecurityStats, checkBotHealth } from '../utils/botSecurity.js'
 import { getStats as getQueueStats } from '../utils/messageQueue.js'
 import { getSpamStats } from '../utils/antiSpam.js'
 
-export default async function (sock, msg) {
+export default ownerOnly(async function (sock, msg) {
   const from = msg.key.remoteJid
-  const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, {
-      text: '⛔ Commande réservée au propriétaire.'
-    }, { quoted: msg })
-  }
 
   try {
     // Récupérer toutes les stats
@@ -66,4 +58,4 @@ ${health.warnings.length > 0 ? `⚠️ *Alertes :*\n${health.warnings.map(w => `
       text: '❗ Erreur lors de la récupération des stats.'
     }, { quoted: msg })
   }
-}
+})

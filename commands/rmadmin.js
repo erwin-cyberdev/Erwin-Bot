@@ -1,16 +1,9 @@
 // commands/rmadmin.js - Owner only
-import { isOwner, removeAdmin, isAdmin } from '../utils/permissions.js'
+import { ownerOnly, isOwner, removeAdmin, isAdmin } from '../utils/permissions.js'
 
-export default async function (sock, msg, args) {
+export default ownerOnly(async function (sock, msg, args) {
   const from = msg.key.remoteJid
   const sender = msg.key.participant || msg.key.remoteJid
-
-  // Vérifier que c'est le owner
-  if (!isOwner(sender)) {
-    return await sock.sendMessage(from, { 
-      text: '⛔ Cette commande est réservée au propriétaire du bot.' 
-    }, { quoted: msg })
-  }
 
   // Récupérer la cible
   const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || []
@@ -28,10 +21,10 @@ export default async function (sock, msg, args) {
     }, { quoted: msg })
   }
 
-  // Vérifier que c'est pas le owner
+  // Vérifier que c'est pas un owner
   if (isOwner(target)) {
     return await sock.sendMessage(from, {
-      text: '⚠️ Tu ne peux pas retirer tes propres droits owner !'
+      text: '⚠️ Impossible de retirer les droits d\'un propriétaire !'
     }, { quoted: msg })
   }
 
@@ -43,7 +36,7 @@ export default async function (sock, msg, args) {
   }
 
   // Rétrograder
-  const success = removeAdmin(target)
+  const success = removeAdmin(target, sender)
   if (success) {
     await sock.sendMessage(from, {
       text: `👎 @${target.split('@')[0]} n'est plus admin du bot.`,
@@ -54,4 +47,4 @@ export default async function (sock, msg, args) {
       text: '⚠️ Erreur lors de la rétrogradation.'
     }, { quoted: msg })
   }
-}
+})

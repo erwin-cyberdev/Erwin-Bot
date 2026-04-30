@@ -2,10 +2,13 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import pkg from 'baileys'
-const makeWASocket = pkg.default || pkg.makeWASocket || (typeof pkg === 'function' ? pkg : pkg)
-const fetchLatestBaileysVersion = pkg.fetchLatestBaileysVersion || pkg.default?.fetchLatestBaileysVersion
-const useMultiFileAuthState = pkg.useMultiFileAuthState || pkg.default?.useMultiFileAuthState
+import { 
+  makeWASocket, 
+  fetchLatestBaileysVersion, 
+  useMultiFileAuthState, 
+  downloadContentFromMessage,
+  DisconnectReason
+} from 'baileys'
 import qrcode from 'qrcode-terminal'
 import fs from 'fs'
 import path from 'path'
@@ -25,12 +28,12 @@ import { getGroupSettings } from './utils/groupSettings.js'
 import { canUserExecuteCommand, startHealthMonitoring, secureMessageSend } from './utils/botSecurity.js'
 import { getPrefix } from './utils/prefixManager.js'
 import { sendText, attachSendWrapper } from './utils/messageQueue.js'
-import { initAntiDelete, handleRevoke } from './handlers/antideleteHandler.js'
+import { initAntiDelete, handleRevoke, isAntideleteEnabled, setAntideleteEnabled } from './handlers/antideleteHandler.js'
 import { initAutoPing } from './utils/autoPing.js'
 import { isAdminOnly } from './config/adminOnly.js'
 import { handleAutoReact } from './utils/autoReact.js'
 import { getStats, trackCommand, trackMessage } from './utils/statsTracker.js'
-import { getServiceStatus } from './utils/render.js'
+import { getServiceStatus, updateRenderEnvVar } from './utils/render.js'
 
 // --- constantes & chemins ---
 const __dirname = process.cwd()
@@ -43,13 +46,13 @@ const rand = (n) => Math.floor(Math.random() * n)
 
 // --- Serveur Web & Keep-Alive ---
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 let lastQR = null
 
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
-app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l\'endpoint health
+app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l'endpoint health
 
-const RENDER_URL = process.env.RENDER_URL || ''
+const RENDER_URL = process.env.RENDER_URL || process.env.RENDER_EXTERNAL_URL || ''
 const BOT_NAME = 'Erwin-Bot'
 
 app.get('/qr', (req, res) => {
@@ -186,10 +189,26 @@ app.listen(PORT, () => {
 })
 
 function startKeepAlive() {
-  const url = RENDER_URL
-  if (!url) return
-
   // Singleton pour éviter les doublons de ping
+  if (global.keepAliveStarted) return
+
+  let url = RENDER_URL
+
+  // Si pas d'URL, on essaie de la récupérer dynamiquement via l'API Render
+  if (!url && process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
+    getServiceStatus().then(service => {
+      if (service.serviceDetails?.url) {
+        url = service.serviceDetails.url
+        console.log(chalk.blue(`⚓ URL Render détectée via API: ${url}`))
+        setupInterval(url)
+      }
+    }).catch(e => console.error('⚓ Échec détection URL via API:', e.message))
+  } else if (url) {
+    setupInterval(url)
+  }
+}
+
+function setupInterval(url) {
   if (global.keepAliveStarted) return
   global.keepAliveStarted = true
 
@@ -200,8 +219,8 @@ function startKeepAlive() {
     } catch (e) {
       console.error('⚓ Keep-alive ping failed:', e.message)
     }
-  }, 15 * 1000) // 15 secondes (Anti-veille Render)
-  console.log(chalk.blue('⚓ Keep-alive system started'))
+  }, 30 * 1000) // 30 secondes (Suffisant pour éviter la veille)
+  console.log(chalk.blue(`⚓ Keep-alive system started on: ${url}`))
 }
 
 // --- Cache optimisé pour les métadonnées ---
@@ -450,16 +469,27 @@ async function start() {
           startHealthMonitoring(60000) // Monitoring toutes les minutes
           console.log(chalk.green('✅ Protections anti-ban activées (mode souple)'))
 
-          // Générer le SESSION_DATA pour Render (Persistence)
-          try {
-            const creds = JSON.parse(fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8'))
-            const sessionData = Buffer.from(JSON.stringify(creds)).toString('base64')
-            console.log(chalk.magenta('\n🔑 SESSION_DATA (Copie ceci pour Render) :'))
-            console.log(chalk.gray(sessionData))
-            console.log(chalk.yellow('\n💡 Instructions: Ajoute cette chaîne dans tes variables d\'env Render sous le nom "SESSION_DATA" pour rester connecté H24.\n'))
-          } catch (e) {
-            console.error('Erreur génération SESSION_DATA:', e.message)
+      // Générer le SESSION_DATA pour Render (Persistence)
+      try {
+        const creds = JSON.parse(fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8'))
+        const sessionData = Buffer.from(JSON.stringify(creds)).toString('base64')
+
+        // Automatisation : Mise à jour automatique de l'env var SESSION_DATA sur Render
+        if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
+          if (process.env.SESSION_DATA !== sessionData) {
+            console.log(chalk.blue('\n🔄 Tentative de mise à jour automatique de SESSION_DATA sur Render...'))
+            await updateRenderEnvVar('SESSION_DATA', sessionData)
+              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour. Le bot redémarrera bientôt.')))
+              .catch(err => console.error(chalk.red('❌ Échec de mise à jour SESSION_DATA auto:', err.message)))
           }
+        } else {
+          console.log(chalk.magenta('\n🔑 SESSION_DATA (Copie ceci pour Render) :'))
+          console.log(chalk.gray(sessionData))
+          console.log(chalk.yellow('\n💡 Instructions: Ajoute cette chaîne dans tes variables d\'env Render sous le nom "SESSION_DATA" pour rester connecté H24.\n'))
+        }
+      } catch (e) {
+        console.error('Erreur génération SESSION_DATA:', e.message)
+      }
           console.log(chalk.green('\n' + '═'.repeat(60) + '\n'))
           console.log(chalk.yellow('📬 En attente de messages...\n'))
         }
@@ -480,116 +510,127 @@ async function start() {
         }
       })
 
-      // Ensure creation status is reset
-      creating = false
-      reconnectAttempts = 0
+      // Note: creating/reconnectAttempts sont reset dans le handler connection=open
 
       // --- Gestion optimisée des messages ---
-      console.log('✅ Bot connecté et en attente de messages...')
+      console.log('✅ Bot configuré, en attente de connexion et messages...')
 
-      sock.ev.on('messages.upsert', async ({ messages }) => {
-        const from = msg.key.remoteJid
-        const isGroup = from.endsWith('@g.us')
-        const sender = msg.key.participant || from
-        const senderNumber = sender.split('@')[0]
+      sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        if (type !== 'notify') return
         
-        // Extraire le contenu textuel et le type
-        const messageType = Object.keys(msg.message)[0]
-        const text = msg.message.conversation || 
-                     msg.message.extendedTextMessage?.text || 
-                     msg.message.imageMessage?.caption || 
-                     msg.message.videoMessage?.caption || ''
+        for (const msg of messages) {
+          try {
+            if (!msg.message || msg.key.fromMe) continue
 
-        // Magnifique log dans la console
-        const timestamp = new Date().toLocaleTimeString()
-        const typeLabel = isGroup ? chalk.black.bgYellow(' 👥 GROUPE ') : chalk.black.bgMagenta(' 👤 PRIVÉ ')
-        
-        console.log(`\n${chalk.gray(`[${timestamp}]`)} ${typeLabel} ${chalk.cyan('📩 Nouveau Message')}`)
-        console.log(`${chalk.gray('   ├─ Expéditeur:')} ${chalk.green(senderNumber)} ${chalk.gray(`(${sender})`)}`)
-        if (isGroup) {
-          console.log(`${chalk.gray('   ├─ Groupe ID:')} ${chalk.blue(from)}`)
-        }
-        console.log(`${chalk.gray('   ├─ Type:')} ${chalk.yellow(messageType)}`)
-        if (text) {
-          console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.white(text.length > 100 ? text.slice(0, 100) + '...' : text)}`)
-        } else {
-          console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.italic.gray('(Pas de texte)')}`)
-        }
+            const from = msg.key.remoteJid
+            const isGroup = from.endsWith('@g.us')
+            const sender = msg.key.participant || from
+            const senderNumber = sender.split('@')[0]
+            
+            // Extraire le contenu textuel et le type
+            const messageType = Object.keys(msg.message)[0]
+            const text = msg.message.conversation || 
+                         msg.message.extendedTextMessage?.text || 
+                         msg.message.imageMessage?.caption || 
+                         msg.message.videoMessage?.caption || ''
 
-        // Capturer le message pour l'anti-delete
-        import('../handlers/antiDeleteHandler.js').then(m => m.captureMessageForAntiDelete(sock, msg)).catch(() => { })
+            // Magnifique log dans la console
+            const timestamp = new Date().toLocaleTimeString()
+            const typeLabel = isGroup ? chalk.black.bgYellow(' 👥 GROUPE ') : chalk.black.bgMagenta(' 👤 PRIVÉ ')
+            
+            console.log(`\n${chalk.gray(`[${timestamp}]`)} ${typeLabel} ${chalk.cyan('📩 Nouveau Message')}`)
+            console.log(`${chalk.gray('   ├─ Expéditeur:')} ${chalk.green(senderNumber)} ${chalk.gray(`(${sender})`)}`)
+            if (isGroup) {
+              console.log(`${chalk.gray('   ├─ Groupe ID:')} ${chalk.blue(from)}`)
+            }
+            console.log(`${chalk.gray('   ├─ Type:')} ${chalk.yellow(messageType)}`)
+            if (text) {
+              console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.white(text.length > 100 ? text.slice(0, 100) + '...' : text)}`)
+            } else {
+              console.log(`${chalk.gray('   └─ Contenu:')} ${chalk.italic.gray('(Pas de texte)')}`)
+            }
 
-        // Tracker de statistiques
-        trackMessage()
+            // Anti-delete est initialisé une seule fois via initAntiDelete(sock) au démarrage
 
-        // Gestion des auto-réactions (non-bloquant)
-        if (from.endsWith('@g.us')) {
-          handleAutoReact(sock, msg, from, text).catch(() => { })
-        }
+            // Tracker de statistiques
+            trackMessage()
 
-        // Vérification antilink en parallèle si nécessaire
-        if (from.endsWith('@g.us')) {
-          const [settings, isAdmin] = await Promise.all([
-            getGroupSettings(from),
-            isAdminCached(sock, from, sender)
-          ])
+            // Gestion des auto-réactions (non-bloquant)
+            if (from.endsWith('@g.us')) {
+              handleAutoReact(sock, msg, from, text).catch(() => { })
+            }
 
-          // Vérification antilink
-          if (settings.antilink && text) {
-            const hasLink = /(https?:\/\/|www\.|wa\.me\/|whatsapp\.com\/)/i.test(text)
-            if (hasLink && !isAdmin) {
+            // Vérification antilink en parallèle si nécessaire
+            if (from.endsWith('@g.us')) {
+              let settings = {}
+              let groupMetadata = null
               try {
-                await Promise.all([
-                  sock.sendMessage(from, { delete: msg.key }).catch(console.error),
-                  sendText(sock, from, `🚫 @${sender.split('@')[0]}, les liens sont interdits dans ce groupe.`, {
-                    mentions: [sender],
-                    delay: 100 // Petit délai pour éviter le flood
-                  })
+                [settings, groupMetadata] = await Promise.all([
+                  getGroupSettings(from),
+                  sock.groupMetadata(from).catch(() => null)
                 ])
-                return
-              } catch (e) {
-                console.error('Erreur antilink:', e)
+              } catch {
+                settings = {}
+                groupMetadata = null
+              }
+
+              const senderParticipant = groupMetadata?.participants?.find(p => p.id === sender)
+              const isGroupAdmin = senderParticipant?.admin === 'admin' || senderParticipant?.admin === 'superadmin'
+
+              // Vérification antilink
+              if (settings?.antilink && text) {
+                const hasLink = /(https?:\/\/|www\.|wa\.me\/|whatsapp\.com\/)/i.test(text)
+                if (hasLink && !isGroupAdmin && !isAdmin(sender)) {
+                  try {
+                    await sock.sendMessage(from, { delete: msg.key }).catch(console.error)
+                    await sendText(sock, from, `🚫 @${sender.split('@')[0]}, les liens sont interdits dans ce groupe.`, {
+                      mentions: [sender],
+                      delay: 100 
+                    })
+                    continue
+                  } catch (e) {
+                    console.error('Erreur antilink:', e)
+                  }
+                }
               }
             }
+
+            // Vérifier si le message commence par le préfixe
+            const prefix = getPrefix()
+            if (!text.startsWith(prefix)) continue
+
+            // Extraire la commande et les arguments
+            const [cmdRaw, ...args] = text.slice(prefix.length).trim().split(/\s+/)
+            const cmd = cmdRaw.toLowerCase()
+
+            // Vérifier si la commande existe
+            const commandFunc = commands.get(cmd)
+            if (!commandFunc) continue
+
+            // Vérifier si le mode admin-only est activé
+            if (isAdminOnly() && !(isAdmin(sender) || isOwner(sender))) {
+              continue
+            }
+
+            // vérif ban
+            if (isBanned(sender)) {
+              await sendText(sock, from, '⛔ Tu es banni du bot.', { quoted: msg })
+              continue
+            }
+
+            const isMediaCommand = ['sticker', 'yt', 'song', 'vision', 'wallpaper', 'movie'].includes(cmd)
+            const canExecute = canUserExecuteCommand(sender, cmd, isMediaCommand)
+            if (!canExecute.allowed) {
+              await sendText(sock, from, canExecute.reason || '⏳ Commande limitée, réessaie plus tard.', { quoted: msg })
+              continue
+            }
+
+            trackCommand(cmd)
+            await commandFunc(sock, msg, args)
+
+          } catch (err) {
+            console.error('Erreur traitement message:', err)
           }
-        }
-
-        // Vérifier si le message commence par le préfixe
-        const prefix = getPrefix()
-        if (!text.startsWith(prefix)) return
-
-        // Extraire la commande et les arguments
-        const [cmdRaw, ...args] = text.slice(prefix.length).trim().split(/\s+/)
-        const cmd = cmdRaw.toLowerCase()
-
-        // Vérifier si la commande existe
-        const commandFunc = commands.get(cmd)
-        if (!commandFunc) return
-
-        // Vérifier si le mode admin-only est activé
-        if (isAdminOnly() && !(isAdmin(sender) || isOwner(sender))) {
-          return;
-        }
-
-        // vérif ban
-        if (isBanned(sender)) {
-          await sendText(sock, from, '⛔ Tu es banni du bot.', { quoted: msg })
-          return
-        }
-
-        const isMediaCommand = ['sticker', 'yt', 'song', 'vision', 'wallpaper', 'movie'].includes(cmd)
-        const canExecute = canUserExecuteCommand(sender, cmd, isMediaCommand)
-        if (!canExecute.allowed) {
-          await sendText(sock, from, canExecute.reason || '⏳ Commande limitée, réessaie plus tard.', { quoted: msg })
-          return
-        }
-
-        try {
-          trackCommand(cmd)
-          await commandFunc(sock, msg, args)
-        } catch (err) {
-          console.error(`Erreur commande ${cmd}:`, err)
-          await reply(sock, from, msg, `⚠️ Erreur: ${err.message}`)
         }
       })
 
@@ -615,7 +656,7 @@ async function start() {
 
           const [settings, groupMetadata] = await Promise.all([
             getGroupSettings(id),
-            getGroupMetadataCached(sock, id)
+            sock.groupMetadata(id).catch(() => null)
           ])
 
           const groupName = groupMetadata?.subject || 'ce groupe'
