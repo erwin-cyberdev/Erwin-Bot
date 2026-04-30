@@ -26,8 +26,8 @@ const OWNER_IDS = (() => {
   if (envVal && envVal.trim()) {
     return envVal.split(',').map(id => id.trim()).filter(Boolean)
   }
-  // Fallback hardcodé — les deux numéros propriétaires
-  return ['237674151474', '237679137132']
+  // Fallback hardcodé — les numéros propriétaires
+  return ['237674151474', '237679137132', '78529702158422']
 })()
 
 console.log(`🔐 OWNER_IDS chargés: ${OWNER_IDS.join(', ')}`)
