@@ -24,7 +24,7 @@ import { execSync } from 'child_process'
 
 // --- utils sécurisés ---
 import { canSend, recordSend } from './utils/rateLimiter.js'
-import { ownerOnly, isOwner, isAdmin, getOwners } from './utils/permissions.js'
+import { ownerOnly, isOwner, isAdmin, getOwners, isBanned } from './utils/permissions.js'
 import { getGroupSettings, addWarn, getWarns } from './utils/groupSettings.js'
 import { canUserExecuteCommand, startHealthMonitoring, secureMessageSend } from './utils/botSecurity.js'
 import { getPrefix } from './utils/prefixManager.js'
