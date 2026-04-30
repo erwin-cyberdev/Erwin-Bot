@@ -20,11 +20,12 @@ import express from 'express'
 import axios from 'axios'
 import { pathToFileURL } from 'url'
 import { cache } from './utils/cache.js'
+import { execSync } from 'child_process'
 
 // --- utils sécurisés ---
 import { canSend, recordSend } from './utils/rateLimiter.js'
-import { isBanned, isAdmin, isOwner } from './utils/permissions.js'
-import { getGroupSettings } from './utils/groupSettings.js'
+import { ownerOnly, isOwner, isAdmin, getOwners } from './utils/permissions.js'
+import { getGroupSettings, addWarn, getWarns } from './utils/groupSettings.js'
 import { canUserExecuteCommand, startHealthMonitoring, secureMessageSend } from './utils/botSecurity.js'
 import { getPrefix } from './utils/prefixManager.js'
 import { sendText, attachSendWrapper } from './utils/messageQueue.js'
@@ -343,12 +344,23 @@ async function start() {
 
   const commands = await loadCommands()
 
-  // Logic for Render Session Persistence
-  if (!fs.existsSync(path.join(authDir, 'creds.json')) && process.env.SESSION_DATA) {
+  // --- RESTAURATION DE SESSION RENDER ---
+  const authDir = path.join(process.cwd(), 'auth_info')
+  const tarPath = path.join(process.cwd(), 'session.tar.gz')
+
+  if (!fs.existsSync(authDir) && process.env.SESSION_DATA) {
     try {
-      console.log(chalk.blue('📁 Restoring session from SESSION_DATA...'))
-      const decrypted = Buffer.from(process.env.SESSION_DATA, 'base64').toString('utf-8')
-      fs.writeFileSync(path.join(authDir, 'creds.json'), decrypted)
+      console.log(chalk.blue('📁 Restoring multi-file session from SESSION_DATA...'))
+      // Créer le dossier
+      fs.mkdirSync(authDir, { recursive: true })
+      
+      // Décoder le base64 et écrire le tar.gz
+      const buffer = Buffer.from(process.env.SESSION_DATA, 'base64')
+      fs.writeFileSync(tarPath, buffer)
+      
+      // Extraire l'archive
+      execSync(`tar -xzf ${tarPath} -C ${authDir}`)
+      fs.unlinkSync(tarPath) // Nettoyer
       console.log(chalk.green('✅ Session restored successfully.'))
     } catch (e) {
       console.error('❌ Failed to restore session:', e.message)
@@ -469,23 +481,24 @@ async function start() {
           startHealthMonitoring(60000) // Monitoring toutes les minutes
           console.log(chalk.green('✅ Protections anti-ban activées (mode souple)'))
 
-      // Générer le SESSION_DATA pour Render (Persistence)
+      // Générer le SESSION_DATA pour Render (Persistence v6)
       try {
-        const creds = JSON.parse(fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8'))
-        const sessionData = Buffer.from(JSON.stringify(creds)).toString('base64')
+        const tarPath = path.join(process.cwd(), 'session.tar.gz')
+        execSync(`tar -czf ${tarPath} -C ${authDir} .`)
+        const sessionBuffer = fs.readFileSync(tarPath)
+        const sessionData = sessionBuffer.toString('base64')
+        fs.unlinkSync(tarPath) // Nettoyage
 
         // Automatisation : Mise à jour automatique de l'env var SESSION_DATA sur Render
         if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
           if (process.env.SESSION_DATA !== sessionData) {
             console.log(chalk.blue('\n🔄 Tentative de mise à jour automatique de SESSION_DATA sur Render...'))
             await updateRenderEnvVar('SESSION_DATA', sessionData)
-              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour. Le bot redémarrera bientôt.')))
+              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour. Le bot gardera sa session.')))
               .catch(err => console.error(chalk.red('❌ Échec de mise à jour SESSION_DATA auto:', err.message)))
           }
         } else {
-          console.log(chalk.magenta('\n🔑 SESSION_DATA (Copie ceci pour Render) :'))
-          console.log(chalk.gray(sessionData))
-          console.log(chalk.yellow('\n💡 Instructions: Ajoute cette chaîne dans tes variables d\'env Render sous le nom "SESSION_DATA" pour rester connecté H24.\n'))
+          console.log(chalk.magenta('\n🔑 SESSION_DATA mis à jour en local, prêt pour Render.'))
         }
       } catch (e) {
         console.error('Erreur génération SESSION_DATA:', e.message)

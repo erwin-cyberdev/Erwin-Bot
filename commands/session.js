@@ -1,29 +1,32 @@
 import fs from 'fs'
 import path from 'path'
 import { ownerOnly } from '../utils/permissions.js'
+import { execSync } from 'child_process'
 
 export default ownerOnly(async function sessionCommand(sock, msg) {
     const from = msg.key.remoteJid
+    const authDir = path.join(process.cwd(), 'auth_info')
 
-    const authPath = path.join(process.cwd(), 'auth_info', 'creds.json')
-
-    if (!fs.existsSync(authPath)) {
-        return await sock.sendMessage(from, { text: '❌ Fichier de session non trouvé. Assure-toi d\'être connecté.' }, { quoted: msg })
+    if (!fs.existsSync(authDir)) {
+        return await sock.sendMessage(from, { text: '❌ Dossier de session non trouvé. Assure-toi d\'être connecté.' }, { quoted: msg })
     }
 
     try {
-        const creds = fs.readFileSync(authPath, 'utf8')
-        const base64 = Buffer.from(creds).toString('base64')
+        const tarPath = path.join(process.cwd(), 'session_export.tar.gz')
+        execSync(`tar -czf ${tarPath} -C ${authDir} .`)
+        const sessionBuffer = fs.readFileSync(tarPath)
+        const base64 = sessionBuffer.toString('base64')
+        fs.unlinkSync(tarPath) // Nettoyage
 
         const text = `📦 *SESSION DATA (BASE64)*
         
-Ceci est votre clé de session pour Render. Copiez-la et ajoutez-la en tant que variable d'environnement \`SESSION_DATA\` sur votre tableau de bord Render.
+Ceci est votre clé de session multi-fichiers pour Render/Docker. Copiez-la et ajoutez-la en tant que variable d'environnement \`SESSION_DATA\` pour conserver votre connexion WhatsApp.
 
 \`\`\`
 ${base64}
 \`\`\`
 
-⚠️ *Note :* Ne partagez jamais ce code, il donne accès à votre compte WhatsApp.`
+⚠️ *Note :* Ne partagez jamais ce code, il donne un accès direct et complet à votre compte WhatsApp.`
 
         await sock.sendMessage(from, { text }, { quoted: msg })
 
