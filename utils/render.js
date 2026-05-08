@@ -23,6 +23,9 @@ export async function getServiceStatus() {
   if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
     throw new Error('RENDER_API_KEY ou RENDER_SERVICE_ID manquant dans le .env')
   }
+  if (RENDER_API_KEY.includes('your_') || RENDER_SERVICE_ID.includes('your_')) {
+     throw new Error('Fake API key detected in .env')
+  }
 
   try {
     const response = await axiosJSON.get(`${BASE_URL}/services/${RENDER_SERVICE_ID}`, {

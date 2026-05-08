@@ -1,37 +1,39 @@
 import fs from 'fs'
 import path from 'path'
 import { ownerOnly } from '../utils/permissions.js'
-import { execSync } from 'child_process'
 
 export default ownerOnly(async function sessionCommand(sock, msg) {
     const from = msg.key.remoteJid
-    const authDir = path.join(process.cwd(), 'auth_info')
+    const credsPath = path.join(process.cwd(), 'auth_info', 'creds.json')
 
-    if (!fs.existsSync(authDir)) {
-        return await sock.sendMessage(from, { text: '❌ Dossier de session non trouvé. Assure-toi d\'être connecté.' }, { quoted: msg })
+    if (!fs.existsSync(credsPath)) {
+        return await sock.sendMessage(from, { text: '❌ Fichier creds.json non trouvé. Assure-toi d\'être connecté.' }, { quoted: msg })
     }
 
+    const txtPath = path.join(process.cwd(), 'session_export.txt')
+
     try {
-        const tarPath = path.join(process.cwd(), 'session_export.tar.gz')
-        execSync(`tar -czf ${tarPath} -C ${authDir} .`)
-        const sessionBuffer = fs.readFileSync(tarPath)
-        const base64 = sessionBuffer.toString('base64')
-        fs.unlinkSync(tarPath) // Nettoyage
+        const credsContent = fs.readFileSync(credsPath, 'utf-8')
+        const base64 = Buffer.from(credsContent).toString('base64')
 
-        const text = `📦 *SESSION DATA (BASE64)*
-        
-Ceci est votre clé de session multi-fichiers pour Render/Docker. Copiez-la et ajoutez-la en tant que variable d'environnement \`SESSION_DATA\` pour conserver votre connexion WhatsApp.
+        fs.writeFileSync(txtPath, base64, 'utf-8')
 
-\`\`\`
-${base64}
-\`\`\`
+        const platform = process.env.RAILWAY_PUBLIC_DOMAIN ? 'Railway' : 'Render'
+        const caption = platform === 'Railway'
+            ? `📦 *SESSION BACKUP (creds.json)*\n\n📏 Taille : ~${(base64.length / 1024).toFixed(1)} KB\n\n💡 Sur Railway avec Volume, ce fichier n'est nécessaire qu'en backup.\n\n⚠️ *Ne partagez jamais ce fichier !*`
+            : `📦 *SESSION DATA (creds.json)*\n\n📏 Taille : ~${(base64.length / 1024).toFixed(1)} KB\n\nCollez le contenu dans la variable \`SESSION_DATA\` sur Render.\n\n⚠️ *Ne partagez jamais ce fichier !*`
 
-⚠️ *Note :* Ne partagez jamais ce code, il donne un accès direct et complet à votre compte WhatsApp.`
-
-        await sock.sendMessage(from, { text }, { quoted: msg })
+        await sock.sendMessage(from, {
+            document: fs.readFileSync(txtPath),
+            mimetype: 'text/plain',
+            fileName: 'session.txt',
+            caption
+        }, { quoted: msg })
 
     } catch (e) {
         console.error('Erreur session command:', e)
-        await sock.sendMessage(from, { text: `❌ Erreur lors de l'extraction de la session: ${e.message}` }, { quoted: msg })
+        await sock.sendMessage(from, { text: `❌ Erreur : ${e.message}` }, { quoted: msg })
+    } finally {
+        if (fs.existsSync(txtPath)) fs.unlinkSync(txtPath)
     }
 })

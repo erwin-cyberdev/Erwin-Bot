@@ -53,7 +53,10 @@ let lastQR = null
 app.get('/', (req, res) => res.send('Erwin-Bot is running!'))
 app.get('/health', (req, res) => res.status(200).send('OK')) // Ajout de l'endpoint health
 
-const RENDER_URL = process.env.RENDER_URL || process.env.RENDER_EXTERNAL_URL || ''
+// URL du service (Railway ou Render)
+const SERVICE_URL = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+  : (process.env.RENDER_URL || process.env.RENDER_EXTERNAL_URL || '')
 const BOT_NAME = 'Erwin-Bot'
 
 app.get('/qr', (req, res) => {
@@ -186,21 +189,20 @@ app.get('/stats', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(chalk.green(`🌐 Serveur Web actif sur le port ${PORT}`))
-  if (RENDER_URL) startKeepAlive()
+  if (SERVICE_URL) startKeepAlive()
 })
 
 function startKeepAlive() {
-  // Singleton pour éviter les doublons de ping
   if (global.keepAliveStarted) return
 
-  let url = RENDER_URL
+  let url = SERVICE_URL
 
-  // Si pas d'URL, on essaie de la récupérer dynamiquement via l'API Render
+  // Fallback : détecter l'URL via l'API Render si disponible
   if (!url && process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
     getServiceStatus().then(service => {
       if (service.serviceDetails?.url) {
         url = service.serviceDetails.url
-        console.log(chalk.blue(`⚓ URL Render détectée via API: ${url}`))
+        console.log(chalk.blue(`⚓ URL détectée via API: ${url}`))
         setupInterval(url)
       }
     }).catch(() => {})
@@ -332,7 +334,6 @@ async function start() {
   else console.log(chalk.green(`🌐 Réseau OK (HTTP ${net.statusCode})`))
 
   const authDir = path.join(process.cwd(), 'auth_info')
-  const tarPath = path.join(process.cwd(), 'session.tar.gz')
 
   if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
 
@@ -347,25 +348,22 @@ async function start() {
 
   const commands = await loadCommands()
 
-  // --- RESTAURATION DE SESSION RENDER ---
-
-  if (!fs.existsSync(authDir) && process.env.SESSION_DATA) {
+  // --- RESTAURATION SESSION ---
+  // Railway : le Volume persiste auth_info → rien à faire
+  // Render (fallback) : restaurer creds.json depuis SESSION_DATA si nécessaire
+  const credsPath = path.join(authDir, 'creds.json')
+  if (!fs.existsSync(credsPath) && process.env.SESSION_DATA) {
     try {
-      console.log(chalk.blue('📁 Restoring multi-file session from SESSION_DATA...'))
-      // Créer le dossier
-      fs.mkdirSync(authDir, { recursive: true })
-      
-      // Décoder le base64 et écrire le tar.gz
-      const buffer = Buffer.from(process.env.SESSION_DATA, 'base64')
-      fs.writeFileSync(tarPath, buffer)
-      
-      // Extraire l'archive
-      execSync(`tar -xzf ${tarPath} -C ${authDir}`)
-      fs.unlinkSync(tarPath) // Nettoyer
-      console.log(chalk.green('✅ Session restored successfully.'))
+      console.log(chalk.blue('📁 Restauration de creds.json depuis SESSION_DATA...'))
+      const credsJson = Buffer.from(process.env.SESSION_DATA, 'base64').toString('utf-8')
+      JSON.parse(credsJson) // Validation
+      fs.writeFileSync(credsPath, credsJson)
+      console.log(chalk.green('✅ creds.json restauré avec succès.'))
     } catch (e) {
-      console.error('❌ Failed to restore session:', e.message)
+      console.error('❌ Échec de restauration creds.json:', e.message)
     }
+  } else if (fs.existsSync(credsPath)) {
+    console.log(chalk.green('💾 Session existante détectée (Volume persistant).'))
   }
 
   const { state, saveCreds } = await useMultiFileAuthState(authDir)
@@ -482,27 +480,26 @@ async function start() {
           startHealthMonitoring(60000) // Monitoring toutes les minutes
           console.log(chalk.green('✅ Protections anti-ban activées (mode souple)'))
 
-      // Générer le SESSION_DATA pour Render (Persistence v6)
-      try {
-        const tarPath = path.join(process.cwd(), 'session.tar.gz')
-        execSync(`tar -czf ${tarPath} -C ${authDir} .`)
-        const sessionBuffer = fs.readFileSync(tarPath)
-        const sessionData = sessionBuffer.toString('base64')
-        fs.unlinkSync(tarPath) // Nettoyage
-
-        // Automatisation : Mise à jour automatique de l'env var SESSION_DATA sur Render
-        if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
+      // Persistence de session
+      if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        // Railway : Volume persiste auth_info automatiquement
+        console.log(chalk.green('💾 Session persistée via Railway Volume.'))
+      } else if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
+        // Render fallback : sauvegarder creds.json dans SESSION_DATA
+        try {
+          const credsContent = fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8')
+          const sessionData = Buffer.from(credsContent).toString('base64')
           if (process.env.SESSION_DATA !== sessionData) {
-            console.log(chalk.blue('\n🔄 Tentative de mise à jour automatique de SESSION_DATA sur Render...'))
+            console.log(chalk.blue('\n🔄 Mise à jour SESSION_DATA sur Render...'))
             await updateRenderEnvVar('SESSION_DATA', sessionData)
-              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour. Le bot gardera sa session.')))
-              .catch(err => console.error(chalk.red('❌ Échec de mise à jour SESSION_DATA auto:', err.message)))
+              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour.')))
+              .catch(err => console.error(chalk.red('❌ Échec:', err.message)))
           }
-        } else {
-          console.log(chalk.magenta('\n🔑 SESSION_DATA mis à jour en local, prêt pour Render.'))
+        } catch (e) {
+          console.error('Erreur sauvegarde creds.json:', e.message)
         }
-      } catch (e) {
-        console.error('Erreur génération SESSION_DATA:', e.message)
+      } else {
+        console.log(chalk.magenta('💾 Session locale active.'))
       }
           console.log(chalk.green('\n' + '═'.repeat(60) + '\n'))
           console.log(chalk.yellow('📬 En attente de messages...\n'))
