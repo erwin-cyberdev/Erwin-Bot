@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM node:20-bullseye-slim
 
 # Installer les dépendances système (FFmpeg + Chromium pour Puppeteer)
 RUN apt-get update \

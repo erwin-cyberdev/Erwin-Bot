@@ -2,16 +2,24 @@
   "userCommands": {
     "102160729637002@lid": [
       {
-        "command": "waifu",
-        "timestamp": 1771258268098
+        "command": "ping",
+        "timestamp": 1778225803827
       },
       {
-        "command": "waifu",
-        "timestamp": 1771258286383
+        "command": "ping",
+        "timestamp": 1778225813907
       },
       {
-        "command": "imagine",
-        "timestamp": 1771258302134
+        "command": "pp",
+        "timestamp": 1778225825825
+      },
+      {
+        "command": "pp",
+        "timestamp": 1778225835739
+      },
+      {
+        "command": "session",
+        "timestamp": 1778225852987
       }
     ],
     "61912188502143@lid": [
@@ -40,6 +48,16 @@
       {
         "command": "manga",
         "timestamp": 1777521271347
+      },
+      {
+        "command": "dlt",
+        "timestamp": 1777521303678
+      }
+    ],
+    "250822449434776@lid": [
+      {
+        "command": "chat",
+        "timestamp": 1777525961444
       }
     ]
   },
@@ -49,20 +67,24 @@
     "102160729637002@lid": {
       "actions": [
         {
-          "action": "song",
-          "timestamp": 1771258233336
+          "action": "ping",
+          "timestamp": 1778225803827
         },
         {
-          "action": "waifu",
-          "timestamp": 1771258268098
+          "action": "ping",
+          "timestamp": 1778225813907
         },
         {
-          "action": "waifu",
-          "timestamp": 1771258286384
+          "action": "pp",
+          "timestamp": 1778225825825
         },
         {
-          "action": "imagine",
-          "timestamp": 1771258302134
+          "action": "pp",
+          "timestamp": 1778225835739
+        },
+        {
+          "action": "session",
+          "timestamp": 1778225852987
         }
       ],
       "score": 0
@@ -139,6 +161,43 @@
         {
           "action": "manga",
           "timestamp": 1777521271347
+        },
+        {
+          "action": "dlt",
+          "timestamp": 1777521303678
+        }
+      ],
+      "score": 0
+    },
+    "250822449434776@lid": {
+      "actions": [
+        {
+          "action": "pp",
+          "timestamp": 1777525525938
+        },
+        {
+          "action": "menu",
+          "timestamp": 1777525679540
+        },
+        {
+          "action": "ai",
+          "timestamp": 1777525727104
+        },
+        {
+          "action": "ai",
+          "timestamp": 1777525768726
+        },
+        {
+          "action": "ai",
+          "timestamp": 1777525821978
+        },
+        {
+          "action": "ai",
+          "timestamp": 1777525845663
+        },
+        {
+          "action": "chat",
+          "timestamp": 1777525961444
         }
       ],
       "score": 0

@@ -348,23 +348,6 @@ async function start() {
 
   const commands = await loadCommands()
 
-  // --- RESTAURATION SESSION ---
-  // Railway : le Volume persiste auth_info → rien à faire
-  // Render (fallback) : restaurer creds.json depuis SESSION_DATA si nécessaire
-  const credsPath = path.join(authDir, 'creds.json')
-  if (!fs.existsSync(credsPath) && process.env.SESSION_DATA) {
-    try {
-      console.log(chalk.blue('📁 Restauration de creds.json depuis SESSION_DATA...'))
-      const credsJson = Buffer.from(process.env.SESSION_DATA, 'base64').toString('utf-8')
-      JSON.parse(credsJson) // Validation
-      fs.writeFileSync(credsPath, credsJson)
-      console.log(chalk.green('✅ creds.json restauré avec succès.'))
-    } catch (e) {
-      console.error('❌ Échec de restauration creds.json:', e.message)
-    }
-  } else if (fs.existsSync(credsPath)) {
-    console.log(chalk.green('💾 Session existante détectée (Volume persistant).'))
-  }
 
   const { state, saveCreds } = await useMultiFileAuthState(authDir)
   const logger = P({ level: 'info' })
@@ -480,27 +463,7 @@ async function start() {
           startHealthMonitoring(60000) // Monitoring toutes les minutes
           console.log(chalk.green('✅ Protections anti-ban activées (mode souple)'))
 
-      // Persistence de session
-      if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-        // Railway : Volume persiste auth_info automatiquement
-        console.log(chalk.green('💾 Session persistée via Railway Volume.'))
-      } else if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
-        // Render fallback : sauvegarder creds.json dans SESSION_DATA
-        try {
-          const credsContent = fs.readFileSync(path.join(authDir, 'creds.json'), 'utf-8')
-          const sessionData = Buffer.from(credsContent).toString('base64')
-          if (process.env.SESSION_DATA !== sessionData) {
-            console.log(chalk.blue('\n🔄 Mise à jour SESSION_DATA sur Render...'))
-            await updateRenderEnvVar('SESSION_DATA', sessionData)
-              .then(() => console.log(chalk.green('✅ SESSION_DATA mis à jour.')))
-              .catch(err => console.error(chalk.red('❌ Échec:', err.message)))
-          }
-        } catch (e) {
-          console.error('Erreur sauvegarde creds.json:', e.message)
-        }
-      } else {
-        console.log(chalk.magenta('💾 Session locale active.'))
-      }
+
           console.log(chalk.green('\n' + '═'.repeat(60) + '\n'))
           console.log(chalk.yellow('📬 En attente de messages...\n'))
         }
