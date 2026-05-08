@@ -14,7 +14,6 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Variables environnement
 ENV NODE_ENV=production
-ENV PORT=10000
 
 # Création du dossier app
 WORKDIR /usr/src/app
@@ -29,9 +28,6 @@ RUN npm rebuild sharp || true
 
 # Copier le code source
 COPY . .
-
-# Exposer le port
-EXPOSE 10000
 
 # Démarrer l'application
 CMD [ "npm", "start" ]
