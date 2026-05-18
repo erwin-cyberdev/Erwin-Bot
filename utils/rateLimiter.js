@@ -1,4 +1,5 @@
 // utils/rateLimiter.js
+import { isAdmin } from './permissions.js'
 
 // Maps pour stocker les données des utilisateurs et groupes
 const userCooldowns = new Map()
@@ -8,6 +9,7 @@ const joinedUsers = new Set()
 
 // Vérifie si un utilisateur est en cooldown (RÉDUIT de 3s à 1s)
 export function checkCooldown(userId, cooldownTime = 1000) {
+  if (isAdmin(userId)) return true
   const now = Date.now()
   const last = userCooldowns.get(userId) || 0
   if (now - last < cooldownTime) return false
@@ -17,6 +19,7 @@ export function checkCooldown(userId, cooldownTime = 1000) {
 
 // Vérifie le taux de messages pour éviter le spam (LIMITÉ À 10 messages au lieu de 5)
 export function checkUserRate(userId, maxMessages = 10, interval = 10000) {
+  if (isAdmin(userId)) return true
   const now = Date.now()
   if (!userRates.has(userId)) userRates.set(userId, [])
 

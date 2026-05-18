@@ -3,7 +3,7 @@
 import fs from 'fs/promises'
 import fsSync from 'fs'
 import path from 'path'
-import { isOwner } from './permissions.js'
+import { isOwner, isAdmin } from './permissions.js'
 
 const SPAM_DB = path.resolve('./data/spam.json')
 
@@ -73,7 +73,7 @@ loadSpamData()
  * Vérifie si un user est blacklisté
  */
 export function isBlacklisted(userId) {
-  if (isOwner(userId)) {
+  if (isAdmin(userId)) {
     if (spamData.blacklist[userId]) {
       delete spamData.blacklist[userId]
       saveSpamData()
@@ -124,10 +124,8 @@ export function checkCommandSpam(userId, command) {
   const now = Date.now()
   const oneMinuteAgo = now - 60000
 
-  // Initialiser si nécessaire
-  if (!spamData.userCommands[userId]) {
-    spamData.userCommands[userId] = []
-  }
+  // Ignorer pour les admins
+  if (isAdmin(userId)) return true
 
   const userHistory = spamData.userCommands[userId]
 
@@ -188,6 +186,8 @@ function addWarning(userId, reason) {
  * Détecte patterns suspects
  */
 export function detectSuspiciousPattern(userId, action) {
+  if (isAdmin(userId)) return
+
   if (!spamData.suspiciousPatterns[userId]) {
     spamData.suspiciousPatterns[userId] = {
       actions: [],
@@ -227,6 +227,8 @@ export function detectSuspiciousPattern(userId, action) {
 export function checkMediaSpam(userId, mediaType) {
   const now = Date.now()
   const oneHourAgo = now - 3600000
+
+  if (isAdmin(userId)) return true
 
   if (!spamData.userCommands[userId]) {
     spamData.userCommands[userId] = []

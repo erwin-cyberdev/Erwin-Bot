@@ -4,7 +4,7 @@ import { checkCooldown, checkUserRate, canSend } from './rateLimiter.js'
 import { isBlacklisted, checkCommandSpam, detectSuspiciousPattern, checkMediaSpam } from './antiSpam.js'
 import { isOptedIn } from './consent.js'
 import { enqueueMessage, getStats as getQueueStats } from './messageQueue.js'
-import { isOwner } from './permissions.js'
+import { isOwner, isAdmin } from './permissions.js'
 
 // Statistiques globales
 const securityStats = {
@@ -20,7 +20,7 @@ const securityStats = {
 export function canUserExecuteCommand(userId, command, isMediaCommand = false) {
   securityStats.totalRequests++
 
-  if (isOwner(userId)) {
+  if (isAdmin(userId)) {
     securityStats.allowedRequests++
     return { allowed: true }
   }

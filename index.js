@@ -494,7 +494,7 @@ async function start() {
         
         for (const msg of messages) {
           try {
-            if (!msg.message || msg.key.fromMe) continue
+            if (!msg.message) continue
 
             const from = msg.key.remoteJid
             const isGroup = from.endsWith('@g.us')
