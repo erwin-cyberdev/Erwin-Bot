@@ -1,28 +1,37 @@
 import axios from 'axios'
+import * as cheerio from 'cheerio'
 import { secureMessageSend } from '../utils/botSecurity.js'
-import { chatCompletion, AI_MODELS } from '../utils/groq.js'
 
 const TIMEOUT = 15000
 const CHUNK_SIZE = 1500
 const MAX_CHUNKS = 8
 
 /**
- * Recherche l'URL Genius d'une chanson
+ * Recherche l'URL Genius d'une chanson, en priorisant la version Romanisée
  */
 async function searchGeniusUrl(query) {
   try {
-    const searchUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query)}`
-    const { data } = await axios.get(searchUrl, { timeout: 10000 })
+    // 1. Tenter d'abord de trouver la version "Romanized"
+    const romUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query + ' romanized')}`
+    const { data: romData } = await axios.get(romUrl, { timeout: 10000 })
+    const romHits = romData?.response?.sections?.find(s => s.type === 'song')?.hits || []
     
-    // Chercher dans les "top_hit" ou les "sections.song"
-    const hits = data?.response?.sections?.find(s => s.type === 'song')?.hits || []
-    const topHit = hits[0]?.result
-    
-    if (topHit) {
+    // On s'assure que le résultat mentionne "Romanized"
+    let bestHit = romHits.find(h => h.result.full_title.toLowerCase().includes('romanized')) || romHits[0]
+
+    // 2. Si aucun résultat, on cherche normalement
+    if (!bestHit) {
+      const stdUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query)}`
+      const { data: stdData } = await axios.get(stdUrl, { timeout: 10000 })
+      const stdHits = stdData?.response?.sections?.find(s => s.type === 'song')?.hits || []
+      bestHit = stdHits[0]
+    }
+
+    if (bestHit?.result) {
       return {
-        url: `https://genius.com${topHit.path}`,
-        title: topHit.full_title,
-        image: topHit.header_image_url
+        url: `https://genius.com${bestHit.result.path}`,
+        title: bestHit.result.full_title,
+        image: bestHit.result.header_image_url
       }
     }
   } catch (err) {
@@ -50,39 +59,41 @@ async function scrapeGeniusHtml(url) {
 }
 
 /**
- * Extrait les paroles via Groq
+ * Extrait les paroles depuis le HTML Genius avec cheerio
  */
-async function extractLyricsWithAI(html, query) {
-  // Tronquer le HTML pour rester dans les limites de tokens (on prend le milieu/fin où sont souvent les lyrics)
-  // Souvent les lyrics Genius sont dans des balises Lyrics__Container
-  const sanitizedHtml = html
-    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, '')
-    .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gm, '')
-    .slice(0, 50000) // Garder un bloc conséquent mais gérable
+function extractLyricsFromHtml(html) {
+  const $ = cheerio.load(html)
 
-  const prompt = `
-Tu es un expert en paroles de chansons. Voici le code HTML d'une page Genius pour la recherche : "${query}".
-Ta mission :
-1. Extrais uniquement les paroles de la chanson à partir de ce HTML.
-2. Si les paroles ne sont pas en alphabet latin (ex: Japonais, Coréen, Chinois), fournis DIRECTEMENT la version "Romanized" (transcription phatétique).
-3. Ne fournis QUE les paroles, sans bla-bla autour, sans "Voici les paroles".
-4. Garde la structure des couplets/refrains si possible.
+  // Sélectionner les conteneurs de paroles Genius
+  const containers = $('[data-lyrics-container="true"]')
+  if (containers.length === 0) return null
 
-HTML :
-${sanitizedHtml}
-`
-  try {
-    const result = await chatCompletion(AI_MODELS.LLAMA_3_3, [
-      { role: 'user', content: prompt }
-    ], { temperature: 0.1 })
-    return result?.trim()
-  } catch (err) {
-    console.error('[GroqLyrics] Erreur extraction:', err.message)
-    return null
-  }
+  let lyrics = ''
+
+  containers.each((_, el) => {
+    const container = $(el)
+
+    // Supprimer les éléments de métadonnées (contributeurs, traductions, description)
+    container.find('[data-exclude-from-selection]').remove()
+
+    // Remplacer les <br> par des sauts de ligne avant d'extraire le texte
+    container.find('br').replaceWith('\n')
+
+    // Extraire le texte (cheerio gère déjà le stripping des balises <a>, <span>, etc.)
+    const text = container.text()
+    lyrics += text + '\n'
+  })
+
+  // Nettoyer : supprimer les lignes vides en excès
+  lyrics = lyrics
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  return lyrics.length > 30 ? lyrics : null
 }
 
-// Fallbacks existants
+// Fallback lyrics.ovh
 async function fetchLyricsOvh(artist, title) {
   try {
     const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`
@@ -112,30 +123,30 @@ export default async function lyricsCommand(sock, msg, args) {
     return await secureMessageSend(sock, from, { text: '❌ *Usage*: .lyrics <titre chanson>', quoted: msg })
   }
 
-  await secureMessageSend(sock, from, { text: `🔍 *Recherche sur Genius (via IA)...*\n*${query}*`, quoted: msg })
+  await secureMessageSend(sock, from, { text: `🔍 *Recherche des paroles romanisées...*\n*${query}*`, quoted: msg })
 
   try {
-    // 1. Chercher sur Genius
+    // 1. Chercher sur Genius (priorité romanisé)
     const geniusResult = await searchGeniusUrl(query)
     let lyrics = null
-    let source = 'Genius (Scraping AI)'
+    let source = 'Genius (Scraping)'
     let finalTitle = geniusResult?.title || query
 
     if (geniusResult) {
       const html = await scrapeGeniusHtml(geniusResult.url)
       if (html) {
-        lyrics = await extractLyricsWithAI(html, query)
+        lyrics = extractLyricsFromHtml(html)
       }
     }
 
-    // 2. Fallback si Groq/Scraping échoue
+    // 2. Fallback si scraping échoue
     if (!lyrics) {
       source = 'Lyrics.OVH (Fallback)'
       lyrics = await fetchLyricsOvh('', query)
     }
 
     if (!lyrics || lyrics.length < 50) {
-      return await secureMessageSend(sock, from, { text: '❌ Aucune paroles trouvée ou extraction échouée.', quoted: msg })
+      return await secureMessageSend(sock, from, { text: '❌ Aucune paroles trouvée.', quoted: msg })
     }
 
     const header = `🎵 *PAROLES : ${finalTitle}*\n🔗 Source: ${source}\n\n`

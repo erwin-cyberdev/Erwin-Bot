@@ -28,7 +28,10 @@
       "stickers": false,
       "media": false,
       "bots": false
-    }
+    },
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "language": "fr"
   },
   "120363424781455117@g.us": {
     "antilink": false,
@@ -259,7 +262,10 @@
       "stickers": false,
       "media": false,
       "bots": false
-    }
+    },
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "language": "fr"
   },
   "120363422187028071@g.us": {
     "antilink": false,
@@ -2066,6 +2072,720 @@
     "language": "fr"
   },
   "120363421045170301@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363403976990771@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363425000779493@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363265365779246@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363409773851400@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363404622405972@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363407318343423@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363334986131937@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363039280927455@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363357518063014@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363196656261674@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363421315735005@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363416322112702@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363292311542769@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363408427480898@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363423745116531@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363420532227270@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363142262081562@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363275977838335@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363400216759526@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363196233483807@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363404858584641@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363371385429486@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363074892324764@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363409195199688@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363419253543067@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363404848603978@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363424080833691@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363406349320310@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363426981941266@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363424071538114@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363408843376491@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363418331319140@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363404658342805@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363406544528125@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363410413150830@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363409552570407@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363406343102275@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363424884984542@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363419439142992@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363428409010241@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363396147692962@g.us": {
+    "antilink": false,
+    "antidelete": false,
+    "antibot": false,
+    "welcome": null,
+    "goodbye": null,
+    "warns": {},
+    "autoreact": true,
+    "autoreactChance": 0.25,
+    "lockSettings": {
+      "links": false,
+      "stickers": false,
+      "media": false,
+      "bots": false
+    },
+    "language": "fr"
+  },
+  "120363358022864012@g.us": {
     "antilink": false,
     "antidelete": false,
     "antibot": false,

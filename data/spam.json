@@ -3,168 +3,109 @@
     "102160729637002@lid": [
       {
         "command": "ping",
-        "timestamp": 1778225803827
+        "timestamp": 1778520457754
       },
       {
         "command": "ping",
-        "timestamp": 1778225813907
-      },
-      {
-        "command": "pp",
-        "timestamp": 1778225825825
-      },
-      {
-        "command": "pp",
-        "timestamp": 1778225835739
-      },
-      {
-        "command": "session",
-        "timestamp": 1778225852987
-      }
-    ],
-    "61912188502143@lid": [
-      {
-        "command": "kick",
-        "timestamp": 1771262463075
-      },
-      {
-        "command": "kick",
-        "timestamp": 1771262496822
-      }
-    ],
-    "240849501864152@lid": [
-      {
-        "command": "ping",
-        "timestamp": 1771252473439
-      }
-    ],
-    "199179594899585@lid": [
-      {
-        "command": "extract",
-        "timestamp": 1771256547380
-      }
-    ],
-    "78529702158422@lid": [
-      {
-        "command": "manga",
-        "timestamp": 1777521271347
-      },
-      {
-        "command": "dlt",
-        "timestamp": 1777521303678
+        "timestamp": 1778520472852
       }
     ],
     "250822449434776@lid": [
       {
-        "command": "chat",
-        "timestamp": 1777525961444
+        "command": "pp",
+        "timestamp": 1778521022183
+      }
+    ],
+    "161220808204296@lid": [
+      {
+        "command": "ship",
+        "timestamp": 1778524914838
+      }
+    ],
+    "59529085620349@lid": [
+      {
+        "command": "ship",
+        "timestamp": 1778521993740
+      }
+    ],
+    "2272725573662@lid": [
+      {
+        "command": "ship",
+        "timestamp": 1778526096915
+      },
+      {
+        "command": "ship",
+        "timestamp": 1778526125373
       }
     ]
   },
-  "userWarnings": {},
-  "blacklist": {},
+  "userWarnings": {
+    "161220808204296@lid": [
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778524252510
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778524456624
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778524588576
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778524737470
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778524914838
+      }
+    ],
+    "2272725573662@lid": [
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778525628178
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778525821134
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778525994624
+      },
+      {
+        "reason": "Suspicious activity pattern detected",
+        "timestamp": 1778526096915
+      }
+    ]
+  },
+  "blacklist": {
+    "161220808204296@lid": {
+      "reason": "5 warnings - Spam detected",
+      "since": 1778524914838,
+      "until": 1778526714838
+    }
+  },
   "suspiciousPatterns": {
     "102160729637002@lid": {
       "actions": [
         {
-          "action": "ping",
-          "timestamp": 1778225803827
-        },
-        {
-          "action": "ping",
-          "timestamp": 1778225813907
-        },
-        {
-          "action": "pp",
-          "timestamp": 1778225825825
-        },
-        {
-          "action": "pp",
-          "timestamp": 1778225835739
-        },
-        {
-          "action": "session",
-          "timestamp": 1778225852987
-        }
-      ],
-      "score": 0
-    },
-    "61912188502143@lid": {
-      "actions": [
-        {
-          "action": "kick",
-          "timestamp": 1771262428847
-        },
-        {
-          "action": "kick",
-          "timestamp": 1771262463076
-        },
-        {
-          "action": "kick",
-          "timestamp": 1771262496822
-        }
-      ],
-      "score": 0
-    },
-    "240849501864152@lid": {
-      "actions": [
-        {
-          "action": "ping",
-          "timestamp": 1771252304000
-        },
-        {
-          "action": "ping",
-          "timestamp": 1771252473439
-        }
-      ],
-      "score": 0
-    },
-    "199179594899585@lid": {
-      "actions": [
-        {
-          "action": "ping",
-          "timestamp": 1771256465913
-        },
-        {
-          "action": "menu",
-          "timestamp": 1771256479002
-        },
-        {
           "action": "extract",
-          "timestamp": 1771256547380
-        }
-      ],
-      "score": 0
-    },
-    "78529702158422@lid": {
-      "actions": [
+          "timestamp": 1778519945659
+        },
         {
           "action": "ping",
-          "timestamp": 1777521000645
+          "timestamp": 1778520387235
         },
         {
-          "action": "menu",
-          "timestamp": 1777521018063
+          "action": "ping",
+          "timestamp": 1778520457754
         },
         {
-          "action": "info",
-          "timestamp": 1777521117613
-        },
-        {
-          "action": "ban",
-          "timestamp": 1777521134505
-        },
-        {
-          "action": "groupinfo",
-          "timestamp": 1777521200043
-        },
-        {
-          "action": "manga",
-          "timestamp": 1777521271347
-        },
-        {
-          "action": "dlt",
-          "timestamp": 1777521303678
+          "action": "ping",
+          "timestamp": 1778520472852
         }
       ],
       "score": 0
@@ -172,35 +113,138 @@
     "250822449434776@lid": {
       "actions": [
         {
+          "action": "ping",
+          "timestamp": 1778520570915
+        },
+        {
+          "action": "extract",
+          "timestamp": 1778520579062
+        },
+        {
+          "action": "extract",
+          "timestamp": 1778520598650
+        },
+        {
           "action": "pp",
-          "timestamp": 1777525525938
-        },
-        {
-          "action": "menu",
-          "timestamp": 1777525679540
-        },
-        {
-          "action": "ai",
-          "timestamp": 1777525727104
-        },
-        {
-          "action": "ai",
-          "timestamp": 1777525768726
-        },
-        {
-          "action": "ai",
-          "timestamp": 1777525821978
-        },
-        {
-          "action": "ai",
-          "timestamp": 1777525845663
-        },
-        {
-          "action": "chat",
-          "timestamp": 1777525961444
+          "timestamp": 1778521022183
         }
       ],
       "score": 0
+    },
+    "161220808204296@lid": {
+      "actions": [
+        {
+          "action": "ship",
+          "timestamp": 1778524420847
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524456623
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524501741
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524532983
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524588576
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524620997
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524669512
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524737470
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524776597
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524826680
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778524914838
+        }
+      ],
+      "score": 0
+    },
+    "59529085620349@lid": {
+      "actions": [
+        {
+          "action": "menu",
+          "timestamp": 1778521834366
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778521993740
+        }
+      ],
+      "score": 0
+    },
+    "2272725573662@lid": {
+      "actions": [
+        {
+          "action": "ship",
+          "timestamp": 1778525569122
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525628178
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525659761
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525770463
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525821134
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525871826
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525931845
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778525994624
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778526036760
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778526061132
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778526096915
+        },
+        {
+          "action": "ship",
+          "timestamp": 1778526125373
+        }
+      ],
+      "score": 1
     }
   }
 }

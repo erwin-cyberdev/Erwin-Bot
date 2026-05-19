@@ -3,7 +3,7 @@ FROM node:20-bullseye-slim
 # Installer les dépendances système (FFmpeg + Chromium pour Puppeteer)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       wget gnupg ffmpeg chromium \
+       wget gnupg ffmpeg chromium python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 
 # Copier le package.json et installer les dépendances
 COPY package*.json ./
-RUN npm install --production --ignore-scripts \
+RUN npm install --production \
     && npx puppeteer browsers install chrome || true
 
 # Rebuild les modules natifs (sharp)
