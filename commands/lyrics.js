@@ -13,7 +13,14 @@ async function searchGeniusUrl(query) {
   try {
     // 1. Tenter d'abord de trouver la version "Romanized"
     const romUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query + ' romanized')}`
-    const { data: romData } = await axios.get(romUrl, { timeout: 10000 })
+    const { data: romData } = await axios.get(romUrl, { 
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Referer': 'https://genius.com/'
+      }
+    })
     const romHits = romData?.response?.sections?.find(s => s.type === 'song')?.hits || []
     
     // On s'assure que le résultat mentionne "Romanized"
@@ -22,7 +29,14 @@ async function searchGeniusUrl(query) {
     // 2. Si aucun résultat, on cherche normalement
     if (!bestHit) {
       const stdUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query)}`
-      const { data: stdData } = await axios.get(stdUrl, { timeout: 10000 })
+      const { data: stdData } = await axios.get(stdUrl, { 
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Referer': 'https://genius.com/'
+        }
+      })
       const stdHits = stdData?.response?.sections?.find(s => s.type === 'song')?.hits || []
       bestHit = stdHits[0]
     }
@@ -48,7 +62,19 @@ async function scrapeGeniusHtml(url) {
     const { data: html } = await axios.get(url, { 
       timeout: TIMEOUT,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'TE': 'trailers',
+        'Referer': 'https://www.google.com/'
       }
     })
     return html
@@ -64,8 +90,14 @@ async function scrapeGeniusHtml(url) {
 function extractLyricsFromHtml(html) {
   const $ = cheerio.load(html)
 
-  // Sélectionner les conteneurs de paroles Genius
-  const containers = $('[data-lyrics-container="true"]')
+  // Sélectionner les conteneurs de paroles Genius (plusieurs sélecteurs possibles selon la version de la page)
+  let containers = $('[data-lyrics-container="true"]')
+  
+  if (containers.length === 0) {
+    // Essayer les anciens sélecteurs si le nouveau échoue
+    containers = $('.lyrics, .SongLyrics__Container-sc-190p9sh-1')
+  }
+
   if (containers.length === 0) return null
 
   let lyrics = ''
