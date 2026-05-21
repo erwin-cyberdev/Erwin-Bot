@@ -11,16 +11,28 @@ if (!fs.existsSync(tempDir)) {
 }
 
 /**
- * Fonction pour convertir un fichier audio en Opus (.ogg)
+ * Fonction pour convertir un fichier audio en Opus (.ogg) avec option de voix grave
  * @param {string} inputPath 
  * @param {string} outputPath 
+ * @param {boolean} deepVoice
  * @returns {Promise<void>}
  */
-async function convertToOpus(inputPath, outputPath) {
+async function convertToOpus(inputPath, outputPath, deepVoice = false) {
   return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
+    let command = ffmpeg(inputPath)
       .toFormat('ogg')
       .audioCodec('libopus')
+
+    if (deepVoice) {
+      // Baisse le pitch (asetrate) et compense la vitesse (atempo)
+      // 0.8 = ~20% plus grave
+      command.audioFilters([
+        'asetrate=44100*0.8',
+        'atempo=1.25'
+      ])
+    }
+
+    command
       .on('error', (err) => {
         console.error('Erreur conversion FFmpeg:', err)
         reject(err)
@@ -95,8 +107,8 @@ export default async function (sock, msg, args) {
       })
     })
 
-    // 3. Conversion en Opus pour WhatsApp
-    await convertToOpus(audioPathMp3, audioPathOpus)
+    // 3. Conversion en Opus pour WhatsApp (avec voix grave forcée)
+    await convertToOpus(audioPathMp3, audioPathOpus, true)
 
     // 4. Envoi de l'audio
     const audioBuffer = fs.readFileSync(audioPathOpus)
