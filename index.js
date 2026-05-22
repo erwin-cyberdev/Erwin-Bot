@@ -337,6 +337,26 @@ async function start() {
 
   if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true })
 
+  // --- Gestion Session Persistence (Railway/Render) ---
+  if (process.env.SESSION_DATA && !fs.existsSync(path.join(authDir, 'creds.json'))) {
+    try {
+      console.log(chalk.blue('📦 Chargement de la session depuis SESSION_DATA...'))
+      const sessionData = process.env.SESSION_DATA.trim()
+      let credsContent = ''
+      
+      if (sessionData.startsWith('{')) {
+        credsContent = sessionData
+      } else {
+        credsContent = Buffer.from(sessionData, 'base64').toString('utf-8')
+      }
+      
+      fs.writeFileSync(path.join(authDir, 'creds.json'), credsContent)
+      console.log(chalk.green('✅ Session restaurée avec succès.'))
+    } catch (e) {
+      console.error(chalk.red('❌ Erreur lors de la restauration de la session:'), e.message)
+    }
+  }
+
   let version
   try {
     const fetched = await fetchLatestBaileysVersion()
