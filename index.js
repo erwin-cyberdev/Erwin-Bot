@@ -1,7 +1,5 @@
 // index.js — Erwin-Bot : version optimisée
 import dotenv from 'dotenv'
-dotenv.config()// index.js — Erwin-Bot : version optimisée
-import dotenv from 'dotenv'
 dotenv.config()
 
 import { 
