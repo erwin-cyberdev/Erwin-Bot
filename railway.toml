@@ -1,12 +1,8 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 300
+startCommand = "node index.js"
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 5
-
-[service]
-internalPort = 3000
+restartPolicyMaxRetries = 3
+# ⬇️ NE PAS mettre de healthcheckPath pour un bot non-HTTP
