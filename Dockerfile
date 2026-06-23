@@ -20,8 +20,7 @@ WORKDIR /usr/src/app
 
 # Copier le package.json et installer les dépendances
 COPY package*.json ./
-RUN npm install --production \
-    && npx puppeteer browsers install chrome || true
+RUN npm install && npx puppeteer browsers install chrome || true
 
 # Rebuild les modules natifs (sharp)
 RUN npm rebuild sharp || true
