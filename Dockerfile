@@ -1,7 +1,6 @@
-cat > Dockerfile << 'EOF'
 FROM node:20-bullseye-slim
 
-# Installer Python et dépendances pour yt-dlp
+# Install Python and dependencies for yt-dlp
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python3 \
@@ -19,5 +18,4 @@ RUN npm ci
 COPY . .
 
 EXPOSE 3000
-CMD ["npm", "start"]
-EOF
+CMD ["node", "index.js"]
