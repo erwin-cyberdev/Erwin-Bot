@@ -1,32 +1,36 @@
-FROM node:20-bullseye-slim
+FROM docker.io/library/node:20-bullseye-slim@sha256:65ef49f7d24aefd012a7fc6f9a2b734bcc19e424976a81f60c86b47266ef5b28
 
-# Installer les dépendances système (FFmpeg + Chromium pour Puppeteer)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       wget gnupg ffmpeg chromium python3 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Puppeteer : utiliser le Chromium système (pas de téléchargement)
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-
-# Variables environnement
-ENV NODE_ENV=production
-
-# Création du dossier app
+# Définir le répertoire de travail
 WORKDIR /usr/src/app
 
-# Copier le package.json et installer les dépendances
+# Copier les fichiers package
 COPY package*.json ./
-RUN npm install && npx puppeteer browsers install chrome || true
 
-# Rebuild les modules natifs (sharp)
+# Installer les dépendances système
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    wget \
+    gnupg \
+    ffmpeg \
+    chromium \
+    python3 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# ✅ CORRIGÉ: npm install SANS --production pour avoir TOUTES les dépendances
+RUN npm install
+
+# Installer puppeteer et chromium
+RUN npx puppeteer browsers install chrome || true
+
+# Rebuild sharp (optionnel)
 RUN npm rebuild sharp || true
 
-# Copier le code source
+# Copier le reste du code
 COPY . .
 
-# Démarrer l'application
-CMD [ "npm", "start" ]
+# Exposer le port (optionnel, pour la health API si tu la rajoutes)
+EXPOSE 3000
+
+# Commande de démarrage
+CMD ["node", "index.js"]
